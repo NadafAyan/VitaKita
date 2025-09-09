@@ -2,56 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* VITAKITA Mental Health PWA Design System */
+/* Therapeutic color palette with calming gradients and smooth animations */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Calming backgrounds */
+    --background: 210 25% 98%;
+    --foreground: 215 25% 20%;
 
+    /* Therapeutic cards */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 20%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Healing primary - soft therapeutic blue */
+    --primary: 200 85% 55%;
+    --primary-glow: 200 95% 75%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Gentle secondary - warm mint */
+    --secondary: 160 35% 88%;
+    --secondary-foreground: 160 35% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Calm neutrals */
+    --muted: 210 20% 95%;
+    --muted-foreground: 215 15% 50%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Supportive accent - lavender */
+    --accent: 260 45% 85%;
+    --accent-foreground: 260 45% 25%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Crisis/warning - gentle coral */
+    --destructive: 15 70% 65%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Borders and inputs */
+    --border: 210 25% 90%;
+    --input: 210 25% 96%;
+    --ring: 200 85% 55%;
 
-    --radius: 0.5rem;
+    /* Therapeutic gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(200 85% 55%), hsl(260 45% 65%));
+    --gradient-calm: linear-gradient(180deg, hsl(210 25% 98%), hsl(200 35% 95%));
+    --gradient-support: linear-gradient(135deg, hsl(160 35% 88%), hsl(200 45% 85%));
+    
+    /* Healing shadows */
+    --shadow-gentle: 0 4px 20px -8px hsl(200 85% 55% / 0.15);
+    --shadow-therapeutic: 0 8px 40px -12px hsl(200 85% 55% / 0.25);
+    --shadow-glow: 0 0 30px hsl(200 95% 75% / 0.3);
+
+    /* Smooth animations */
+    --transition-gentle: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    --transition-therapeutic: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -101,5 +116,46 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background: var(--gradient-calm);
+  }
+}
+
+@layer utilities {
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .gradient-calm {
+    background: var(--gradient-calm);
+  }
+  
+  .gradient-support {
+    background: var(--gradient-support);
+  }
+  
+  .shadow-gentle {
+    box-shadow: var(--shadow-gentle);
+  }
+  
+  .shadow-therapeutic {
+    box-shadow: var(--shadow-therapeutic);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .transition-gentle {
+    transition: var(--transition-gentle);
+  }
+  
+  .transition-therapeutic {
+    transition: var(--transition-therapeutic);
+  }
+  
+  .glass-effect {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
 }

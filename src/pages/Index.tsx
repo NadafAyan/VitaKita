@@ -1,12 +1,38 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import Navigation from "@/components/Navigation";
+import HomePage from "@/components/HomePage";
+import ChatPage from "@/components/ChatPage";
+import ResourcesPage from "@/components/ResourcesPage";
+import ForumPage from "@/components/ForumPage";
+import AdminDashboard from "@/components/AdminDashboard";
 
 const Index = () => {
+  const [activeSection, setActiveSection] = useState("home");
+
+  const renderActiveSection = () => {
+    switch (activeSection) {
+      case "home":
+        return <HomePage setActiveSection={setActiveSection} />;
+      case "chat":
+        return <ChatPage />;
+      case "resources":
+        return <ResourcesPage />;
+      case "forum":
+        return <ForumPage />;
+      case "admin":
+        return <AdminDashboard />;
+      default:
+        return <HomePage setActiveSection={setActiveSection} />;
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      {renderActiveSection()}
+      <Navigation 
+        activeSection={activeSection} 
+        setActiveSection={setActiveSection} 
+      />
     </div>
   );
 };
