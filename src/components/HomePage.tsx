@@ -63,9 +63,10 @@ const HomePage = ({ setActiveSection }: HomePageProps) => {
               </Button>
               <Button
                 size="lg"
-                variant="outline"
+                variant="secondary"
                 onClick={() => setActiveSection('resources')}
-                className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary transition-therapeutic"
+                // className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary transition-therapeutic"
+                className="shadow-therapeutic transition-therapeutic"
               >
                 <BookOpen className="mr-2" size={20} />
                 Explore Resources
