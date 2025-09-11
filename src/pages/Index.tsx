@@ -6,6 +6,7 @@ import HomePage from "@/components/HomePage";
 import ChatPage from "@/components/ChatPage";
 import ResourcesPage from "@/components/ResourcesPage";
 import ForumPage from "@/components/ForumPage";
+import CounselingPage from "@/components/CounselingPage";
 
 interface User {
   id: string;
@@ -47,6 +48,8 @@ const Index = () => {
         return <ResourcesPage />;
       case "forum":
         return <ForumPage />;
+      case "counseling":
+        return <CounselingPage />;
       default:
         return <HomePage setActiveSection={setActiveSection} />;
     }
