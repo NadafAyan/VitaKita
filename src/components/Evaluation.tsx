@@ -14,7 +14,7 @@ function Questionnaire() {
     },
     {
         id:"2",
-        problem:"",
+        problem:"Discourageous?",
     options:[
       "I am not particularly discouraged about the future.",
       "I feel discouraged about the future.",
@@ -24,7 +24,7 @@ function Questionnaire() {
     },
     {
         id:"3",
-        problem:"",
+        problem:"I do not feel like a failure",
     options:[
       "I do not feel like a failure.",
       "I feel I have failed more than the average person.",
@@ -34,7 +34,7 @@ function Questionnaire() {
     },
     {
         id:"4",
-        problem:"",
+        problem:"I get as much satisfaction out of things as I used to",
     options:    [
       "I get as much satisfaction out of things as I used to.",
       "I don't enjoy things the way I used to.",
@@ -44,7 +44,7 @@ function Questionnaire() {
     },
     {
         id:"5",
-        problem:"",
+        problem:"I don't feel particularly guilty.",
     options:[
       "I don't feel particularly guilty.",
       "I feel guilty a good part of the time.",
@@ -53,7 +53,7 @@ function Questionnaire() {
     ]},
     {
         id:"6",
-        problem:"",
+        problem:"I don't feel I am being punished",
     options:[
       "I don't feel I am being punished.",
       "I feel I may be punished.",
@@ -62,7 +62,7 @@ function Questionnaire() {
     ]},
     {
         id:"7",
-        problem:"",
+        problem:"why you feel disappointed?",
     options:[
       "I don't feel disappointed in myself.",
       "I am disappointed in myself.",
@@ -71,7 +71,7 @@ function Questionnaire() {
     ]},
     {
         id:"8",
-        problem:"",
+        problem:"I don't feel I am any worse than anybody else",
     options:[
       "I don't feel I am any worse than anybody else.",
       "I am critical of myself for my weaknesses or mistakes.",
@@ -80,7 +80,7 @@ function Questionnaire() {
     ]},
     {
         id:"9",
-        problem:"",
+        problem:"I don't have any thoughts of killing myself",
     options:[
       "I don't have any thoughts of killing myself.",
       "I have thoughts of killing myself, but I would not carry them out.",
@@ -89,7 +89,7 @@ function Questionnaire() {
     ]},
     {
         id:"10",
-        problem:"",
+        problem:"I don't cry any more than usual",
     options:[
       "I don't cry any more than usual.",
       "I cry more now than I used to.",
@@ -98,7 +98,7 @@ function Questionnaire() {
     ]},
     {
         id:"11",
-        problem:"",
+        problem:"I am no more irritated by things than I ever was",
     options:[
       "I am no more irritated by things than I ever was.",
       "I am slightly more irritated now than usual.",
@@ -116,7 +116,7 @@ function Questionnaire() {
     ]},
     {
         id:"13",
-        problem:"",
+        problem:"I make decisions about as well as I ever could",
     options:[
       "I make decisions about as well as I ever could.",
       "I put off making decisions more than I used to.",
@@ -125,7 +125,7 @@ function Questionnaire() {
     ]},
     {
         id:"14",
-        problem:"",
+        problem:"Are you not happy with yourself?",
     options:[
       "I don't feel that I look any worse than I used to.",
       "I am worried that I am looking old or unattractive.",
@@ -134,7 +134,7 @@ function Questionnaire() {
     ]},
     {
         id:"15",
-        problem:"",
+        problem:"I can work about as well as before",
     options:[
       "I can work about as well as before.",
       "It takes an extra effort to get started at doing something.",
@@ -143,7 +143,7 @@ function Questionnaire() {
     ]},
     {
         id:"16",
-        problem:"",
+        problem:"I can sleep as well as usual.",
     options:[
       "I can sleep as well as usual.",
       "I don't sleep as well as I used to.",
@@ -152,7 +152,7 @@ function Questionnaire() {
     ]},
     {
         id:"17",
-        problem:"",
+        problem:"Are you tired ?",
     options:[
       "I don't get more tired than usual.",
       "I get tired more easily than I used to.",
@@ -161,7 +161,7 @@ function Questionnaire() {
     ]},
     {
         id:"18",
-        problem:"",
+        problem:"My appetite is no worse than usual",
     options:[
       "My appetite is no worse than usual.",
       "My appetite is not as good as it used to be.",
@@ -170,13 +170,85 @@ function Questionnaire() {
     ]},
     {
         id:"19",
-        problem:"",
+        problem:"I haven't lost much weight, if any, lately",
     options:[
       "I haven't lost much weight, if any, lately.",
       "I have lost more than five pounds.",
       "I have lost more than ten pounds.",
       "I have lost more than fifteen pounds."
-    ]}
+    ]},
+    {
+      id:"20",
+    problem:"How often do you feel overwhelmed by stress or daily responsibilities?",
+    options:[
+             "Never",
+             "Sometimes",
+             "Often",
+            "Almost always",
+
+      ]
+    },
+    {
+    id: "21",
+    problem: "How would you describe the quality of your sleep over the past month?",
+    options: [
+      "Very good – I wake up refreshed", 
+      "Fair – I sometimes wake up tired", 
+      "Poor – I often wake up tired", 
+      "Very poor – I rarely feel rested"]
+  },
+  {
+    id: "22",
+    problem: "Do you frequently lose interest in activities you once enjoyed?",
+    options: [
+      "Never", 
+      "Occasionally", 
+      "Frequently", 
+      "Almost all the time"
+    ]
+  },
+  {
+    id: "23",
+    problem: "How often do you experience difficulty concentrating (work, study, daily tasks)?",
+    options: [
+      "Rarely", 
+      "Sometimes", 
+      "Often", 
+      "Almost every day"]
+  },
+  {
+    id: "24",
+    problem: "How often do you feel anxious, nervous, or on edge?",
+    options: ["Never", "Occasionally", "Frequently", "Nearly all the time"]
+  },
+  {
+    id: "25",
+    problem: "How would you describe your energy level during the day?",
+    options: [
+      "High – I feel active most of the day", 
+      "Moderate – I feel okay but get tired sometimes", 
+      "Low – I feel tired often", 
+      "Very low – I struggle to stay active"]
+  },
+  {
+    id: "26",
+    problem: "How often do you feel socially withdrawn or prefer to isolate yourself?",
+    options: ["Never", "Sometimes", "Often", "Always"]
+  },
+  {
+    id: "27",
+    problem: "Do you have persistent negative thoughts about yourself (e.g., 'I am worthless')?",
+    options: ["Never", "Occasionally", "Frequently", "Almost always"]
+  },
+  {
+    id: "28",
+    problem: "How often do you experience sudden mood changes (e.g., happy → sad, calm → angry)?",
+    options: [
+      "Rarely", 
+      "Sometimes", 
+      "Often", 
+      "Very often"]
+  },
   ]);
 
    return (
