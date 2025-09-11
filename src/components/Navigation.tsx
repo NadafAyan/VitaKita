@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, BookOpen, Users, AlertTriangle } from "lucide-react";
+import { Heart, MessageCircle, BookOpen, Users, AlertTriangle, ContactRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmergencyButton from "@/components/EmergencyButton";
 
@@ -15,7 +15,7 @@ const Navigation = ({ activeSection, setActiveSection, user, onLogout }: Navigat
     { id: 'chat', label: 'AI Support', icon: MessageCircle },
     { id: 'resources', label: 'Resources', icon: BookOpen },
     { id: 'forum', label: 'Community', icon: Users },
-    { id: 'counseling', label: 'Counseling', icon: Users },
+    { id: 'counseling', label: 'Counseling', icon: ContactRound },
   ];
 
   return (

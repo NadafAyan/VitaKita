@@ -78,7 +78,7 @@ export default function CounselingPage() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-6 grid md:grid-cols-3 gap-6">
+    <div className="max-w-6xl mx-auto p-6 grid md:grid-cols-3 gap-6 mt-8">
       {/* Counselors List */}
       <div className="md:col-span-2 bg-white shadow-lg rounded-2xl p-6">
         <h2 className="text-xl font-bold mb-4">Choose Your Counselor</h2>
