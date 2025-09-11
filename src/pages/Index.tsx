@@ -7,6 +7,7 @@ import ChatPage from "@/components/ChatPage";
 import ResourcesPage from "@/components/ResourcesPage";
 import ForumPage from "@/components/ForumPage";
 import CounselingPage from "@/components/CounselingPage";
+import UserRecord from '../components/UserRecord';
 
 interface User {
   id: string;
@@ -50,6 +51,8 @@ const Index = () => {
         return <ForumPage />;
       case "counseling":
         return <CounselingPage />;
+      case "userRecord":
+        return <UserRecord />;
       default:
         return <HomePage setActiveSection={setActiveSection} />;
     }
