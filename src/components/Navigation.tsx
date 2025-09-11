@@ -15,6 +15,7 @@ const Navigation = ({ activeSection, setActiveSection, user, onLogout }: Navigat
     { id: 'chat', label: 'AI Support', icon: MessageCircle },
     { id: 'resources', label: 'Resources', icon: BookOpen },
     { id: 'forum', label: 'Community', icon: Users },
+    { id: 'counseling', label: 'Counseling', icon: Users },
   ];
 
   return (
