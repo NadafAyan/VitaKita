@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { GoogleGenAI } from "@google/genai";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +13,36 @@ interface Message {
   timestamp: Date;
   isEmergency?: boolean;
 }
+
+const GEMINI_API_KEY = "AIzaSyCV37Y5HDXwn9ZLHFEmGobXz52-Ry_GqDA"; 
+
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
+const fetchAIResponse = async (userMessage: string): Promise<Message> => {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: userMessage,
+    });
+
+    const aiText = response.text || "Sorry, I couldn't understand that.";
+
+    return {
+      id: Date.now().toString(),
+      text: aiText,
+      sender: "ai",
+      timestamp: new Date(),
+    };
+  } catch (error: any) {
+    console.error("Gemini API error:", error);
+    return {
+      id: Date.now().toString(),
+      text: "Sorry, there was a problem connecting to the AI service.",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+  }
+};
 
 const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -35,40 +66,6 @@ const ChatPage = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Mock AI response function (would integrate with Gemini API via Supabase)
-  const generateAIResponse = (userMessage: string): Message => {
-    const lowercaseMessage = userMessage.toLowerCase();
-    
-    // Crisis detection keywords
-    const crisisKeywords = ['kill', 'suicide', 'die', 'hurt myself', 'end it', 'cant go on'];
-    const isEmergency = crisisKeywords.some(keyword => lowercaseMessage.includes(keyword));
-
-    if (isEmergency) {
-      return {
-        id: Date.now().toString(),
-        text: "I'm concerned about what you've shared. Your life has value, and there are people who want to help. Please reach out immediately:\n\n• National Suicide Prevention Lifeline: 988\n• Crisis Text Line: Text HOME to 741741\n• Emergency: 911\n\nYou don't have to face this alone. Professional counselors at your school are also available to provide support.",
-        sender: 'ai',
-        timestamp: new Date(),
-        isEmergency: true,
-      };
-    }
-
-    // Supportive responses based on common themes
-    const supportiveResponses = [
-      "It sounds like you're going through a challenging time. That takes courage to share. What specific aspects of this situation feel most overwhelming right now?",
-      "I hear that you're struggling, and I want you to know that your feelings are valid. Have you tried any coping strategies recently that have helped, even a little?",
-      "Thank you for trusting me with this. It's completely normal to feel this way during your studies. Let's explore some gentle techniques that might help you feel more grounded.",
-      "I can sense the weight you're carrying. Remember that seeking support is a sign of strength. What would feel like a small, manageable first step for you right now?",
-    ];
-
-    return {
-      id: Date.now().toString(),
-      text: supportiveResponses[Math.floor(Math.random() * supportiveResponses.length)],
-      sender: 'ai',
-      timestamp: new Date(),
-    };
-  };
-
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
@@ -83,20 +80,18 @@ const ChatPage = () => {
     setInputMessage("");
     setIsLoading(true);
 
-    // Simulate API delay
-    setTimeout(() => {
-      const aiResponse = generateAIResponse(inputMessage);
-      setMessages(prev => [...prev, aiResponse]);
-      setIsLoading(false);
+    // Call Puter API instead of mock
+    const aiResponse = await fetchAIResponse(inputMessage);
+    setMessages(prev => [...prev, aiResponse]);
+    setIsLoading(false);
 
-      if (aiResponse.isEmergency) {
-        toast({
-          title: "Crisis Support Available",
-          description: "Professional help is available 24/7. You are not alone.",
-          variant: "destructive",
-        });
-      }
-    }, 1000);
+    if (aiResponse.isEmergency) {
+      toast({
+        title: "Crisis Support Available",
+        description: "Professional help is available 24/7. You are not alone.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
