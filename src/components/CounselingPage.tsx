@@ -72,7 +72,11 @@ const sessions: Session[] = [
   },
 ];
 
-export default function CounselingPage() {
+type CounselingPageProps = {
+  user: any;
+};
+
+const CounselingPage = ({ user }: CounselingPageProps) => {
   const [selectedCounselor, setSelectedCounselor] = useState<number | null>(
     null
   );
@@ -177,4 +181,6 @@ export default function CounselingPage() {
       )}
     </div>
   );
-}
+};
+
+export default CounselingPage;
