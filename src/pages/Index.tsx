@@ -8,6 +8,7 @@ import ResourcesPage from "@/components/ResourcesPage";
 import ForumPage from "@/components/ForumPage";
 import CounselingPage from "@/components/CounselingPage";
 import UserRecord from '../components/UserRecord';
+import { Dispatch, SetStateAction, useState as useReactState } from "react";
 
 interface User {
   id: string;
@@ -15,9 +16,12 @@ interface User {
   name: string;
 }
 
-const Index = () => {
+type IndexProps = {
+  user: any;
+};
+
+const Index = ({ user }: IndexProps) => {
   const [activeSection, setActiveSection] = useState("home");
-  const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
 
   const handleAuthSuccess = (userData: User) => {
@@ -50,9 +54,9 @@ const Index = () => {
       case "forum":
         return <ForumPage />;
       case "counseling":
-        return <CounselingPage />;
+        return <CounselingPage user={user} />;
       case "userRecord":
-        return <UserRecord />;
+        return <UserRecord user={user} />;
       default:
         return <HomePage setActiveSection={setActiveSection} />;
     }
@@ -72,3 +76,15 @@ const Index = () => {
 };
 
 export default Index;
+
+// Move setUser into the Index component using useState
+// Remove the standalone setUser function below
+
+// --- Remove this function ---
+// function setUser(userData: User) {
+//   throw new Error("Function not implemented.");
+// }
+function setUser(userData: User) {
+  throw new Error("Function not implemented.");
+}
+
