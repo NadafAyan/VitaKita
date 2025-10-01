@@ -11,8 +11,8 @@ type StudentInfo = {
 };
 
 const student: StudentInfo = {
-  name: "John Doe",
-  disease: "Anxiety",
+  name: "Nikita Jadhav",
+  disease: "Depression",
   streak: 7,
   moodScore: 8.2,
   sessions: 12,
