@@ -8,15 +8,15 @@ import NotFound from "./pages/NotFound";
 import UserRecord from "./components/UserRecord";
 import CounselingPage from "./components/CounselingPage";
 import { auth } from "./firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useEffect, useState } from "react";
 
 function useFirebaseAuth() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any | null>(undefined); // undefined = loading
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+      setUser(firebaseUser || null);
     });
     return () => unsubscribe();
   }, []);
@@ -28,6 +28,16 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const user = useFirebaseAuth();
+
+  if (user === undefined) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    // Show your login page or redirect here
+    return <div>Please log in to continue.</div>;
+    // Or: return <LoginPage />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
