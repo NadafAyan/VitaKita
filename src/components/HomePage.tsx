@@ -125,9 +125,9 @@ const HomePage = () => {
       <section className="container mx-auto px-4 py-16 text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">Begin your wellness journey</h2>
         <p className="text-lg text-muted-foreground mb-6">Join thousands of students building healthier habits with VitaKita.</p>
-        <Link to="/auth">
-          <Button size="lg" className="shadow-therapeutic">Get Started</Button>
-        </Link>
+        <Button size="lg" className="shadow-therapeutic" onClick={() => navigate('/?auth=1')}>
+          Get Started
+        </Button>
       </section>
     </div>
   );
