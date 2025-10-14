@@ -3,12 +3,14 @@ import { useToast } from "@/hooks/use-toast";
 import AuthPage from "@/components/AuthPage";
 import Navigation from "@/components/Navigation";
 import HomePage from "@/components/HomePage";
+import DashboardHome from "@/components/DashboardHome";
 import ChatPage from "@/components/ChatPage";
 import ResourcesPage from "@/components/ResourcesPage";
 import ForumPage from "@/components/ForumPage";
 import CounselingPage from "@/components/CounselingPage";
 import UserRecord from '../components/UserRecord';
 import { Dispatch, SetStateAction, useState as useReactState } from "react";
+import { useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase";
 
@@ -25,6 +27,7 @@ type IndexProps = {
 const Index = ({ user }: IndexProps) => {
   const [activeSection, setActiveSection] = useState("home");
   const { toast } = useToast();
+  const location = useLocation();
 
   const handleLogout = () => {
     signOut(auth).then(() => {
@@ -42,15 +45,17 @@ const Index = ({ user }: IndexProps) => {
     });
   };
 
-  // Show auth page if user is not logged in
+  // Show marketing homepage for guests; if `?auth=1` present, render AuthPage
   if (!user) {
-    return <AuthPage />;
+    const params = new URLSearchParams(location.search);
+    const showAuth = params.get("auth") === "1";
+    return showAuth ? <AuthPage /> : <HomePage />;
   }
 
   const renderActiveSection = () => {
     switch (activeSection) {
       case "home":
-        return <HomePage setActiveSection={setActiveSection} />;
+        return <DashboardHome setActiveSection={setActiveSection} />;
       case "chat":
         return <ChatPage />;
       case "resources":
@@ -62,7 +67,7 @@ const Index = ({ user }: IndexProps) => {
       case "userRecord":
         return <UserRecord user={user} />;
       default:
-        return <HomePage setActiveSection={setActiveSection} />;
+        return <DashboardHome setActiveSection={setActiveSection} />;
     }
   };
 

@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-// import heroImage from "https://placehold.co/1920x1080/E5D5F0/6C4E9C?text=VITAKITA+by+Nikita";
-import { auth } from "@/firebase"; // Use unified auth instance
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "@/firebase"; // Use unified auth instance
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 const AuthPage = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -17,6 +18,7 @@ const AuthPage = () => {
     confirmPassword: "" 
   });
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -55,10 +57,26 @@ const AuthPage = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, signupData.email, signupData.password);
       const user = userCredential.user;
+      // Set display name
+      if (signupData.name) {
+        await updateProfile(user, { displayName: signupData.name });
+      }
+      // Create user profile in Firestore with diagnostic flag
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        name: signupData.name || (user.email ? user.email.split('@')[0] : "User"),
+        disease: null,
+        requiresDiagnostic: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
       toast({
         title: "Account created!",
         description: "Welcome to VITAKITA. Your mental health journey starts here.",
       });
+      // Send new users to their record so diagnostic runs immediately
+      navigate("/User", { state: { newSignup: true } });
     } catch (error) {
       toast({
         title: "Signup failed",
