@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
+import { useEffect, useState } from "react";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCDiXYUV33li8xlmUFUvlxm6q7oWjgNHtw",
@@ -18,3 +19,16 @@ const auth = getAuth(app);
 setPersistence(auth, browserLocalPersistence);
 
 export { app, auth };
+
+function useFirebaseAuth() {
+  const [user, setUser] = useState<any | null>(undefined); // undefined = loading
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser || null);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  return user;
+}
