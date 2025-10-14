@@ -7,9 +7,9 @@ import DashboardHome from "@/components/DashboardHome";
 import ChatPage from "@/components/ChatPage";
 import ResourcesPage from "@/components/ResourcesPage";
 import ForumPage from "@/components/ForumPage";
-import CounselingPage from "@/components/CounselingPage";
-import UserRecord from '../components/UserRecord';
+// Removed standalone CounselingPage and UserRecord - merged into DashboardHome
 import { Dispatch, SetStateAction, useState as useReactState } from "react";
+import { useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase";
 
@@ -26,6 +26,7 @@ type IndexProps = {
 const Index = ({ user }: IndexProps) => {
   const [activeSection, setActiveSection] = useState("home");
   const { toast } = useToast();
+  const location = useLocation();
 
   const handleLogout = () => {
     signOut(auth).then(() => {
@@ -43,15 +44,17 @@ const Index = ({ user }: IndexProps) => {
     });
   };
 
-  // Show marketing landing if user is not logged in
+  // Show marketing homepage for guests; if `?auth=1` present, render AuthPage
   if (!user) {
-    return <HomePage />;
+    const params = new URLSearchParams(location.search);
+    const showAuth = params.get("auth") === "1";
+    return showAuth ? <AuthPage /> : <HomePage />;
   }
 
   const renderActiveSection = () => {
     switch (activeSection) {
       case "home":
-        return <DashboardHome setActiveSection={setActiveSection} />;
+        return <DashboardHome setActiveSection={setActiveSection} user={user} />;
       case "chat":
         return <ChatPage />;
       case "resources":
@@ -59,11 +62,11 @@ const Index = ({ user }: IndexProps) => {
       case "forum":
         return <ForumPage />;
       case "counseling":
-        return <CounselingPage user={user} />;
+        return <DashboardHome setActiveSection={setActiveSection} user={user} />;
       case "userRecord":
-        return <UserRecord user={user} />;
+        return <DashboardHome setActiveSection={setActiveSection} user={user} />;
       default:
-        return <DashboardHome setActiveSection={setActiveSection} />;
+        return <DashboardHome setActiveSection={setActiveSection} user={user} />;
     }
   };
 
