@@ -8,7 +8,7 @@ import NotFound from "./pages/NotFound";
 import UserRecord from "./components/UserRecord";
 import CounselingPage from "./components/CounselingPage";
 import { auth } from "./firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 
 function useFirebaseAuth() {
@@ -29,15 +29,7 @@ const queryClient = new QueryClient();
 const App = () => {
   const user = useFirebaseAuth();
 
-  if (user === undefined) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    // Show your login page or redirect here
-    return <div>Please log in to continue.</div>;
-    // Or: return <LoginPage />;
-  }
+  // Defer auth gating to route elements; Index will show AuthPage when user is null
 
   return (
     <QueryClientProvider client={queryClient}>
