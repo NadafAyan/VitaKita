@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { User, BriefcaseMedical, Zap, Award, Gauge, CalendarClock, MessageSquare, HeartPulse } from 'lucide-react';
+import { db } from "@/firebase";
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { useLocation } from "react-router-dom";
 
 type StudentInfo = {
   name: string;
@@ -110,6 +113,145 @@ type UserRecordProps = {
 };
 
 const UserRecord = ({ user }: UserRecordProps) => {
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [showDiagnostic, setShowDiagnostic] = useState(false);
+  const [lastDiagnosticResult, setLastDiagnosticResult] = useState<string | null>(null);
+  const location = useLocation();
+
+  // Simple MCQ diagnostic definition
+  const questions = useMemo(() => ([
+    {
+      id: "q1",
+      text: "Over the past 2 weeks, how often have you felt down, depressed, or hopeless?",
+      weights: { Depression: 2, Anxiety: 1, Stress: 1 },
+    },
+    {
+      id: "q2",
+      text: "Over the past 2 weeks, how often have you felt nervous, anxious, or on edge?",
+      weights: { Depression: 1, Anxiety: 2, Stress: 1 },
+    },
+    {
+      id: "q3",
+      text: "Over the past 2 weeks, how often have you found it hard to relax?",
+      weights: { Depression: 1, Anxiety: 1, Stress: 2 },
+    },
+    {
+      id: "q4",
+      text: "Have you experienced loss of interest or pleasure in doing things?",
+      weights: { Depression: 2, Anxiety: 0, Stress: 1 },
+    },
+    {
+      id: "q5",
+      text: "Have you experienced restlessness or constant worrying?",
+      weights: { Depression: 0, Anxiety: 2, Stress: 1 },
+    },
+  ]), []);
+
+  const options = [
+    { key: "0", label: "Not at all", multiplier: 0 },
+    { key: "1", label: "Several days", multiplier: 1 },
+    { key: "2", label: "More than half the days", multiplier: 2 },
+    { key: "3", label: "Nearly every day", multiplier: 3 },
+  ];
+
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const allAnswered = useMemo(() => questions.every(q => answers[q.id] !== undefined), [answers, questions]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadProfile() {
+      setProfileLoading(true);
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        if (!snap.exists()) {
+          // Initialize profile if missing
+          const initProfile = {
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName || (user.email ? user.email.split('@')[0] : "User"),
+            disease: null,
+            requiresDiagnostic: true,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          };
+          await setDoc(userRef, initProfile);
+          if (isMounted) {
+            setProfile({ ...initProfile, createdAt: new Date(), updatedAt: new Date() });
+            setShowDiagnostic(true);
+            setLastDiagnosticResult(null);
+          }
+        } else {
+          const data = snap.data();
+          if (isMounted) {
+            setProfile(data);
+            const fromSignup = Boolean((location.state as any)?.newSignup);
+            setShowDiagnostic(fromSignup || Boolean(data.requiresDiagnostic || data.disease == null));
+            setLastDiagnosticResult(data.disease ?? null);
+          }
+        }
+      } catch (e) {
+        // In case of error, still allow UI
+        if (isMounted) {
+          setProfile(null);
+        }
+      } finally {
+        if (isMounted) setProfileLoading(false);
+      }
+    }
+    loadProfile();
+    return () => { isMounted = false; };
+  }, [user, location.state]);
+
+  const displayName = useMemo(() => {
+    if (profile?.name) return profile.name;
+    if (user?.displayName) return user.displayName;
+    if (user?.email) return user.email.split('@')[0];
+    return "User";
+  }, [profile, user]);
+
+  const disease = profile?.disease || "Unknown";
+
+  function computeDisease(a: Record<string, string>) {
+    const scores: Record<string, number> = { Depression: 0, Anxiety: 0, Stress: 0 };
+    for (const q of questions) {
+      const optKey = a[q.id];
+      if (optKey == null) continue;
+      const multiplier = options.find(o => o.key === optKey)?.multiplier ?? 0;
+      for (const [cond, w] of Object.entries(q.weights)) {
+        scores[cond] += w * multiplier;
+      }
+    }
+    let best: keyof typeof scores = "Depression";
+    for (const key of Object.keys(scores) as (keyof typeof scores)[]) {
+      if (scores[key] > scores[best]) best = key;
+    }
+    return best;
+  }
+
+  async function submitDiagnostic() {
+    const result = computeDisease(answers);
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(userRef, {
+        disease: result,
+        requiresDiagnostic: false,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+      setProfile((prev: any) => ({ ...(prev || {}), disease: result, requiresDiagnostic: false }));
+      setShowDiagnostic(false);
+      setLastDiagnosticResult(result);
+    } catch (e) {
+      // keep diagnostic open if save failed
+    }
+  }
+
+  function startRetake() {
+    setAnswers({});
+    setShowDiagnostic(true);
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center p-8 font-sans">
       <div className="w-full max-w-7xl">
@@ -117,18 +259,76 @@ const UserRecord = ({ user }: UserRecordProps) => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content Area */}
           <div className="flex-1 space-y-8">
+            {/* Diagnostic Modal/Card */}
+            {showDiagnostic && (
+              <div className="p-6 bg-white rounded-xl shadow-md border-l-4 border-indigo-500">
+                <h2 className="text-xl font-semibold mb-4">Initial Diagnostic</h2>
+                <p className="text-sm text-gray-600 mb-4">Please answer the following questions to help us understand your current state. You can retake this any time.</p>
+                <div className="space-y-4">
+                  {questions.map((q) => (
+                    <div key={q.id} className="border-b pb-4">
+                      <div className="font-medium mb-2">{q.text}</div>
+                      <div className="flex flex-wrap gap-2">
+                        {options.map((opt) => (
+                          <button
+                            key={opt.key}
+                            className={`px-3 py-1 rounded-full border ${answers[q.id] === opt.key ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300'}`}
+                            onClick={(e) => { e.preventDefault(); setAnswers(prev => ({ ...prev, [q.id]: opt.key })); }}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 flex gap-3">
+                  <button
+                    className={`px-4 py-2 rounded-md ${allAnswered ? 'bg-indigo-600 text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
+                    disabled={!allAnswered}
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); submitDiagnostic(); }}
+                  >
+                    Submit Diagnostic
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded-md bg-gray-100 text-gray-800"
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setShowDiagnostic(false); }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* Diagnostic Result Banner */}
+            {!showDiagnostic && lastDiagnosticResult && (
+              <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-indigo-700">Latest diagnostic result</div>
+                  <div className="text-lg font-semibold text-indigo-900">{lastDiagnosticResult}</div>
+                </div>
+                <button
+                  className="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+                  onClick={(e) => { e.preventDefault(); startRetake(); }}
+                  type="button"
+                >
+                  Retake
+                </button>
+              </div>
+            )}
             {/* Top Info Cards */}
             <div className="p-6 bg-white rounded-xl shadow-md border-l-4 border-indigo-500">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                 <div className="flex items-center space-x-2">
                   <User size={20} className="text-gray-600" />
                   <span className="text-lg font-bold text-gray-800">Name:</span> 
-                  <span className="text-lg text-gray-600">{student.name}</span>
+                  <span className="text-lg text-gray-600">{profileLoading ? 'Loading...' : displayName}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <BriefcaseMedical size={20} className="text-gray-600" />
                   <span className="text-lg font-bold text-gray-800">Disease:</span> 
-                  <span className="text-lg text-gray-600">{student.disease}</span>
+                  <span className="text-lg text-gray-600">{profileLoading ? 'Loading...' : disease}</span>
                 </div>
               </div>
             </div>
@@ -239,8 +439,11 @@ const UserRecord = ({ user }: UserRecordProps) => {
                   <MessageSquare size={20} />
                   <span>Start AI Chat</span>
                 </button>
-                <button className="w-full py-3 px-4 rounded-lg bg-gray-100 text-gray-800 font-semibold shadow-md hover:bg-gray-200 transition-colors duration-200">
-                  Take Assessment
+                <button
+                  className="w-full py-3 px-4 rounded-lg bg-gray-100 text-gray-800 font-semibold shadow-md hover:bg-gray-200 transition-colors duration-200"
+                  onClick={(e) => { e.preventDefault(); startRetake(); }}
+                >
+                  Retake Diagnostic
                 </button>
                 <button className="w-full py-3 px-4 rounded-lg bg-gray-100 text-gray-800 font-semibold shadow-md hover:bg-gray-200 transition-colors duration-200">
                   Log Mood

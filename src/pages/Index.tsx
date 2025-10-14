@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import AuthPage from "@/components/AuthPage";
 import Navigation from "@/components/Navigation";
 import HomePage from "@/components/HomePage";
+import DashboardHome from "@/components/DashboardHome";
 import ChatPage from "@/components/ChatPage";
 import ResourcesPage from "@/components/ResourcesPage";
 import ForumPage from "@/components/ForumPage";
@@ -42,15 +43,15 @@ const Index = ({ user }: IndexProps) => {
     });
   };
 
-  // Show auth page if user is not logged in
+  // Show marketing landing if user is not logged in
   if (!user) {
-    return <AuthPage />;
+    return <HomePage />;
   }
 
   const renderActiveSection = () => {
     switch (activeSection) {
       case "home":
-        return <HomePage setActiveSection={setActiveSection} />;
+        return <DashboardHome setActiveSection={setActiveSection} />;
       case "chat":
         return <ChatPage />;
       case "resources":
@@ -62,7 +63,7 @@ const Index = ({ user }: IndexProps) => {
       case "userRecord":
         return <UserRecord user={user} />;
       default:
-        return <HomePage setActiveSection={setActiveSection} />;
+        return <DashboardHome setActiveSection={setActiveSection} />;
     }
   };
 

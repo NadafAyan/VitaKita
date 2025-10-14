@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 const firebaseConfig = {
@@ -14,11 +15,12 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Set persistence only once
 setPersistence(auth, browserLocalPersistence);
 
-export { app, auth };
+export { app, auth, db };
 
 function useFirebaseAuth() {
   const [user, setUser] = useState<any | null>(undefined); // undefined = loading
