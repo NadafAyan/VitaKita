@@ -95,22 +95,22 @@ const AuthPage = () => {
         <div className="gradient-hero absolute inset-0 opacity-90" />
         <div className="relative container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
+            <div className="text-center mb-8 md:mb-12 px-2">
               <div className="flex items-center justify-center gap-3 mb-6">
                 <div className="p-3 rounded-full bg-primary-foreground/20">
                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary-foreground">
                   VITAKITA
                 </h1>
               </div>
-              <p className="text-xl text-primary-foreground/90 max-w-2xl mx-auto">
+              <p className="text-base sm:text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto">
                 Your confidential digital mental health companion for higher education
               </p>
             </div>
             <Card className="max-w-md mx-auto shadow-therapeutic border-0 glass-effect">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl font-bold">Join VITAKITA</CardTitle>
+                <CardTitle className="text-xl sm:text-2xl font-bold">Join VITAKITA</CardTitle>
                 <CardDescription>
                   Secure, confidential mental health support designed for students
                 </CardDescription>

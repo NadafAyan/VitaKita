@@ -7,8 +7,7 @@ import DashboardHome from "@/components/DashboardHome";
 import ChatPage from "@/components/ChatPage";
 import ResourcesPage from "@/components/ResourcesPage";
 import ForumPage from "@/components/ForumPage";
-import CounselingPage from "@/components/CounselingPage";
-import UserRecord from '../components/UserRecord';
+// Removed standalone CounselingPage and UserRecord - merged into DashboardHome
 import { Dispatch, SetStateAction, useState as useReactState } from "react";
 import { useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
@@ -55,7 +54,7 @@ const Index = ({ user }: IndexProps) => {
   const renderActiveSection = () => {
     switch (activeSection) {
       case "home":
-        return <DashboardHome setActiveSection={setActiveSection} />;
+        return <DashboardHome setActiveSection={setActiveSection} user={user} />;
       case "chat":
         return <ChatPage />;
       case "resources":
@@ -63,11 +62,11 @@ const Index = ({ user }: IndexProps) => {
       case "forum":
         return <ForumPage />;
       case "counseling":
-        return <CounselingPage user={user} />;
+        return <DashboardHome setActiveSection={setActiveSection} user={user} />;
       case "userRecord":
-        return <UserRecord user={user} />;
+        return <DashboardHome setActiveSection={setActiveSection} user={user} />;
       default:
-        return <DashboardHome setActiveSection={setActiveSection} />;
+        return <DashboardHome setActiveSection={setActiveSection} user={user} />;
     }
   };
 
