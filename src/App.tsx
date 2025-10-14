@@ -37,8 +37,14 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index user={user} />} />
-            <Route path="/counseling" element={<CounselingPage user={user} />} />
-            <Route path="/User" element={<UserRecord user={user} />} />
+            <Route
+              path="/counseling"
+              element={user ? <CounselingPage user={user} /> : <Index user={user} />}
+            />
+            <Route
+              path="/User"
+              element={user ? <UserRecord user={user} /> : <Index user={user} />}
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

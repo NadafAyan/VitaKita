@@ -5,14 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 // import heroImage from "https://placehold.co/1920x1080/E5D5F0/6C4E9C?text=VITAKITA+by+Nikita";
-import { auth } from "./FirebaseConfig"; // Import your auth instance
+import { auth } from "@/firebase"; // Use unified auth instance
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 
-interface AuthPageProps {
-  onAuthSuccess: (user: { id: string; email: string; name: string }, isNewUser: boolean) => void;
-}
-
-const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
+const AuthPage = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({ 
     name: "", 
@@ -29,7 +25,6 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, loginData.email, loginData.password);
       const user = userCredential.user;
-      onAuthSuccess({ id: user.uid, email: user.email, name: user.displayName || user.email.split('@')[0] }, false); 
       toast({
         title: "Welcome back!",
         description: "You've been successfully logged in to VITAKITA.",
@@ -60,7 +55,6 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, signupData.email, signupData.password);
       const user = userCredential.user;
-      onAuthSuccess({ id: user.uid, email: user.email, name: signupData.name || user.email.split('@')[0] }, true);
       toast({
         title: "Account created!",
         description: "Welcome to VITAKITA. Your mental health journey starts here.",

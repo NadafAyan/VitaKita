@@ -9,6 +9,8 @@ import ForumPage from "@/components/ForumPage";
 import CounselingPage from "@/components/CounselingPage";
 import UserRecord from '../components/UserRecord';
 import { Dispatch, SetStateAction, useState as useReactState } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase";
 
 interface User {
   id: string;
@@ -24,23 +26,25 @@ const Index = ({ user }: IndexProps) => {
   const [activeSection, setActiveSection] = useState("home");
   const { toast } = useToast();
 
-  const handleAuthSuccess = (userData: User) => {
-    setUser(userData);
-    setActiveSection("home");
-  };
-
   const handleLogout = () => {
-    setUser(null);
-    setActiveSection("home");
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out from VITAKITA.",
+    signOut(auth).then(() => {
+      setActiveSection("home");
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out from VITAKITA.",
+      });
+    }).catch((error) => {
+      toast({
+        title: "Logout failed",
+        description: error.message,
+        variant: "destructive",
+      });
     });
   };
 
   // Show auth page if user is not logged in
   if (!user) {
-    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+    return <AuthPage />;
   }
 
   const renderActiveSection = () => {
@@ -76,15 +80,3 @@ const Index = ({ user }: IndexProps) => {
 };
 
 export default Index;
-
-// Move setUser into the Index component using useState
-// Remove the standalone setUser function below
-
-// --- Remove this function ---
-// function setUser(userData: User) {
-//   throw new Error("Function not implemented.");
-// }
-function setUser(userData: User) {
-  throw new Error("Function not implemented.");
-}
-
