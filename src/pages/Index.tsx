@@ -72,13 +72,15 @@ const Index = ({ user }: IndexProps) => {
 
   return (
     <div className="min-h-screen">
-      {renderActiveSection()}
       <Navigation 
         activeSection={activeSection} 
         setActiveSection={setActiveSection}
         user={user}
         onLogout={handleLogout}
       />
+      <div className="pt-14">
+        {renderActiveSection()}
+      </div>
     </div>
   );
 };

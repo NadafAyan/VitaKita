@@ -19,39 +19,36 @@ const Navigation = ({ activeSection, setActiveSection, user, onLogout }: Navigat
 
   return (
     <>
-      {/* Mobile/Tablet bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-t border-border/50 glass-effect" aria-label="Primary">
+      {/* Mobile/Tablet top nav */}
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border/50 glass-effect" aria-label="Primary">
         <div className="container mx-auto px-3">
-          {/* Emergency Button - Always Visible */}
-          <div className="flex justify-center py-2">
-            <EmergencyButton className="h-9 text-xs px-4" />
-          </div>
-          
-          {/* Main Navigation */}
-          <div className="flex justify-between items-center py-2 border-t border-border/20">
-            {navItems.map(({ id, label, icon: Icon }) => (
-              <Button
-                key={id}
-                aria-label={label}
-                variant={activeSection === id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveSection(id)}
-                className="flex flex-col gap-1 h-auto py-2 px-2 transition-therapeutic"
-              >
-                <Icon size={20} />
-                <span className="text-[10px] leading-none font-medium">{label}</span>
-              </Button>
-            ))}
+          <div className="flex justify-between items-center h-14 gap-2">
+            <div className="flex items-center gap-1">
+              {navItems.map(({ id, icon: Icon }) => (
+                <Button
+                  key={id}
+                  aria-label={id}
+                  variant={activeSection === id ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setActiveSection(id)}
+                  className="h-9 w-9 p-0 transition-therapeutic"
+                >
+                  <Icon size={18} />
+                </Button>
+              ))}
+            </div>
+            
+            <EmergencyButton className="h-9 text-xs px-3" />
+            
             {user && onLogout && (
               <Button
                 aria-label="Logout"
                 variant="ghost"
                 size="sm"
                 onClick={onLogout}
-                className="flex flex-col gap-1 h-auto py-2 px-2 transition-therapeutic text-muted-foreground hover:text-foreground"
+                className="h-9 px-2 transition-therapeutic"
               >
-                <AlertTriangle size={20} />
-                <span className="text-[10px] leading-none font-medium">Logout</span>
+                <AlertTriangle size={18} />
               </Button>
             )}
           </div>
