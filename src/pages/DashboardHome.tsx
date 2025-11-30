@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Heart, MessageCircle, BookOpen, Users, Shield, Award, Gauge, CalendarClock, MessageSquare, HeartPulse, Calendar, Video, Phone, Star } from "lucide-react";
 import heroImage from "@/assets/hero-vitakita.jpg";
 import React, { useEffect, useMemo, useState } from "react";
-import { db } from "@/firebase";
+import { db } from "@/config/firebase";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 
 interface DashboardHomeProps {
@@ -151,12 +151,12 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
     <div className="min-h-screen pb-24">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
           style={{ backgroundImage: `url(${heroImage})` }}
         />
         <div className="gradient-hero absolute inset-0 opacity-90" />
-        
+
         <div className="relative container mx-auto px-4 py-16 text-center">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 text-primary-foreground">
@@ -168,7 +168,7 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
             <p className="text-lg mb-8 text-primary-foreground/80 max-w-2xl mx-auto">
               A safe, stigma-free space offering resources and tools to help you manage stress, anxiety, and mental wellness challenges.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
@@ -390,8 +390,8 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Your privacy and wellbeing are our top priorities. All interactions are confidential, 
-              and our AI is trained to provide supportive guidance while recognizing when professional 
+              Your privacy and wellbeing are our top priorities. All interactions are confidential,
+              and our AI is trained to provide supportive guidance while recognizing when professional
               intervention may be needed.
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">

@@ -5,9 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import UserRecord from "./components/UserRecord";
-import CounselingPage from "./components/CounselingPage";
-import { auth } from "./firebase";
+import UserRecord from "./pages/UserRecord";
+import CounselingPage from "./pages/CounselingPage";
+import { auth } from "./config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 

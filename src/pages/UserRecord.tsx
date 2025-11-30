@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { User, BriefcaseMedical, Zap, Award, Gauge, CalendarClock, MessageSquare, HeartPulse } from 'lucide-react';
-import { db } from "@/firebase";
+import { db } from "@/config/firebase";
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useLocation } from "react-router-dom";
 
@@ -29,8 +29,8 @@ const stats = [
     color: "bg-blue-50 text-blue-700",
     icon: (
       <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-        <circle cx="12" cy="12" r="4" fill="currentColor"/>
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+        <circle cx="12" cy="12" r="4" fill="currentColor" />
       </svg>
     ),
   },
@@ -40,7 +40,7 @@ const stats = [
     color: "bg-green-50 text-green-700",
     icon: (
       <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
         <path d="M9 14s1 2 3 2 3-2 3-2" stroke="currentColor" strokeWidth="2" />
       </svg>
     ),
@@ -51,7 +51,7 @@ const stats = [
     color: "bg-yellow-50 text-yellow-700",
     icon: (
       <svg className="w-8 h-8 text-yellow-400" fill="none" viewBox="0 0 24 24">
-        <polyline points="3 17 9 11 13 15 21 7" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <polyline points="3 17 9 11 13 15 21 7" stroke="currentColor" strokeWidth="2" fill="none" />
       </svg>
     ),
   },
@@ -61,8 +61,8 @@ const stats = [
     color: "bg-green-50 text-green-700",
     icon: (
       <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/>
-        <rect x="6" y="16" width="12" height="4" rx="2" stroke="currentColor" strokeWidth="2"/>
+        <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
+        <rect x="6" y="16" width="12" height="4" rx="2" stroke="currentColor" strokeWidth="2" />
       </svg>
     ),
   },
@@ -322,12 +322,12 @@ const UserRecord = ({ user }: UserRecordProps) => {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                 <div className="flex items-center space-x-2">
                   <User size={20} className="text-gray-600" />
-                  <span className="text-lg font-bold text-gray-800">Name:</span> 
+                  <span className="text-lg font-bold text-gray-800">Name:</span>
                   <span className="text-lg text-gray-600">{profileLoading ? 'Loading...' : displayName}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <BriefcaseMedical size={20} className="text-gray-600" />
-                  <span className="text-lg font-bold text-gray-800">Disease:</span> 
+                  <span className="text-lg font-bold text-gray-800">Disease:</span>
                   <span className="text-lg text-gray-600">{profileLoading ? 'Loading...' : disease}</span>
                 </div>
               </div>
@@ -388,7 +388,7 @@ const UserRecord = ({ user }: UserRecordProps) => {
                   </div>
                 ))}
               </div>
-              
+
               {/* Upcoming */}
               <div className="w-full md:w-72 bg-white rounded-xl shadow p-6 h-fit">
                 <h3 className="text-xl font-semibold text-gray-800 flex items-center mb-4">

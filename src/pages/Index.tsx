@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import AuthPage from "@/components/AuthPage";
+import AuthPage from "@/pages/AuthPage";
 import Navigation from "@/components/Navigation";
-import HomePage from "@/components/HomePage";
-import DashboardHome from "@/components/DashboardHome";
-import ChatPage from "@/components/ChatPage";
-import ResourcesPage from "@/components/ResourcesPage";
-import ForumPage from "@/components/ForumPage";
+import HomePage from "@/pages/HomePage";
+import DashboardHome from "@/pages/DashboardHome";
+import ChatPage from "@/pages/ChatPage";
+import ResourcesPage from "@/pages/ResourcesPage";
+import ForumPage from "@/pages/ForumPage";
 // Removed standalone CounselingPage and UserRecord - merged into DashboardHome
 import { Dispatch, SetStateAction, useState as useReactState } from "react";
 import { useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { auth } from "@/firebase";
+import { auth } from "@/config/firebase";
 
 interface User {
   id: string;
@@ -72,8 +72,8 @@ const Index = ({ user }: IndexProps) => {
 
   return (
     <div className="min-h-screen">
-      <Navigation 
-        activeSection={activeSection} 
+      <Navigation
+        activeSection={activeSection}
         setActiveSection={setActiveSection}
         user={user}
         onLogout={handleLogout}
