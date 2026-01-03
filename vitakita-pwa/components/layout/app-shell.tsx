@@ -5,7 +5,7 @@ import { EmergencySOS } from "@/components/feature/emergency-sos";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Book, MessageSquare, ShieldAlert, LogOut, Settings, UserPlus, Pill } from "lucide-react";
+import { LayoutDashboard, Book, MessageSquare, ShieldAlert, LogOut, Settings, UserPlus, Pill, Wind } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
@@ -35,6 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         { href: "/chat", label: "AI Support", icon: MessageSquare },
         { href: "/journal", label: "Journal", icon: Book },
         { href: "/medications", label: "Meds", icon: Pill },
+        { href: "/breathing", label: "Breathe", icon: Wind },
         // { href: "/sos", label: "SOS", icon: ShieldAlert, variant: "destructive" },
     ];
 
