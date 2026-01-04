@@ -16,11 +16,18 @@ export default function ChatPage() {
 
     // Cast to any to bypass TS errors about missing properties
     const chatHelpers = useChat({
+        api: '/api/chat',
         onError: (e: Error) => {
             console.error("Chat error:", e);
-            alert(`Error: ${e.message}`);
+            alert(`Chat Error: ${e.message}`);
+        },
+        onResponse: (response: any) => {
+            console.log("Chat API response received:", response.status, response.statusText);
+        },
+        onFinish: (message: any) => {
+            console.log("Chat finished:", message);
         }
-    }) as any;
+    } as any) as any;
 
     const { messages, append, isLoading } = chatHelpers;
 

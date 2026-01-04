@@ -8,7 +8,9 @@ import { collection, getDocs, query, limit, orderBy, addDoc, where, doc, getDoc 
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
+    console.log("Chat API received request");
     const { messages, severity, userId } = await req.json();
+    console.log("Processing message for user:", userId, "Msg count:", messages?.length);
 
     const systemPrompt = `You are VitaKita's AI Wellness Companion.
   Your goal is to support the student's mental well-being using their personal data to guide them.
@@ -79,7 +81,7 @@ export async function POST(req: Request) {
                     reason: z.string().describe('The reason for the appointment'),
                     date: z.string().describe('Preferred date (e.g., "tomorrow at 2pm")'),
                 }),
-                execute: async ({ reason, date }) => {
+                execute: async ({ reason, date }: { reason: string, date: string }) => {
                     if (!userId) return "User not logged in.";
                     try {
                         await addDoc(collection(db, "users", userId, "appointments"), {
@@ -93,16 +95,16 @@ export async function POST(req: Request) {
                         return "Failed to book appointment.";
                     }
                 },
-            }),
+            }) as any,
             suggestResources: tool({
                 description: 'Get wellness resources based on a topic',
                 parameters: z.object({
                     topic: z.string().describe('Topic like anxiety, sleep, stress'),
                 }),
-                execute: async ({ topic }) => {
+                execute: async ({ topic }: { topic: string }) => {
                     return `Here are some resources for ${topic}: [Article 1], [Video 2]`;
                 },
-            }),
+            }) as any,
             getAvailableSlots: tool({
                 description: 'Check available appointment slots for counseling',
                 parameters: z.object({}),
