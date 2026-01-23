@@ -55,7 +55,7 @@ const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hello! I'm Nikk's. I'm here to provide supportive guidance and coping strategies. How are you feeling today?",
+      text: "Hello! I'm VitaBot. I'm here to provide supportive guidance and coping strategies. How are you feeling today?",
       sender: 'ai',
       timestamp: new Date(),
       isEmergency: false,
