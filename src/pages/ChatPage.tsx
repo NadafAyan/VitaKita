@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { GoogleGenerativeAI, Content } from "@google/generative-ai"; 
+import Groq from "groq-sdk";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,24 +14,22 @@ interface Message {
   isEmergency?: boolean;
 }
 
-const GEMINI_API_KEY = "AIzaSyCV37Y5HDXwn9ZLHFEmGobXz52-Ry_GqDA"; 
-
-// --- Gemini Setup with System Instruction (Logic) ---
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const AI_INSTRUCTION = "You are a close friend to the user. Talk exactly like a close friend, be casual, supportive, and informal.";
-
-const model = genAI.getGenerativeModel({ 
-  model: "gemini-2.5-flash",
-  systemInstruction: AI_INSTRUCTION, 
+// --- Groq Setup (Logic) ---
+const groq = new Groq({
+  apiKey: import.meta.env.VITE_GROQ_API_KEY,
+  dangerouslyAllowBrowser: true // Required for client-side usage
 });
 
-const fetchAIResponse = async (history: Content[]): Promise<Message> => {
+const AI_INSTRUCTION = "You are a close friend to the user. Talk exactly like a close friend, be casual, supportive, and informal.";
+
+const fetchAIResponse = async (history: { role: "user" | "assistant" | "system"; content: string }[]): Promise<Message> => {
   try {
-    const result = await model.generateContent({
-      contents: history,
+    const chatCompletion = await groq.chat.completions.create({
+      messages: history,
+      model: "llama3-8b-8192",
     });
 
-    const aiText = result.response.text() || "Sorry, I couldn't understand that.";
+    const aiText = chatCompletion.choices[0]?.message?.content || "Sorry, I couldn't understand that.";
 
     return {
       id: Date.now().toString(),
@@ -41,7 +39,7 @@ const fetchAIResponse = async (history: Content[]): Promise<Message> => {
       isEmergency: false,
     };
   } catch (error: any) {
-    console.error("Gemini API error:", error);
+    console.error("Groq API error:", error);
     return {
       id: Date.now().toString(),
       text: "Sorry, there was a problem connecting to the AI service.",
@@ -88,14 +86,16 @@ const ChatPage = () => {
     setInputMessage("");
     setIsLoading(true);
 
-    const conversationHistory: Content[] = messages.map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }]
+    // Prepare history for Groq (OpenAI format)
+    const conversationHistory = messages.map(msg => ({
+      role: (msg.sender === 'user' ? 'user' : 'assistant') as "user" | "assistant",
+      content: msg.text
     }));
 
-    const newHistory: Content[] = [
+    const newHistory = [
+      { role: "system" as const, content: AI_INSTRUCTION },
       ...conversationHistory,
-      { role: 'user' as const, parts: [{ text: inputMessage }] }
+      { role: "user" as const, content: inputMessage }
     ];
 
     const aiResponse = await fetchAIResponse(newHistory);
@@ -159,7 +159,7 @@ const ChatPage = () => {
                       message.isEmergency ? <AlertTriangle size={16} /> : <Bot size={16} />}
                   </div>
 
-                  <Card className={`shadow-sm transition-colors ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : message.isEmergency ? 'bg-destructive/10' : 'bg-card' } max-w-[92%] sm:max-w-[70%]`}>
+                  <Card className={`shadow-sm transition-colors ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : message.isEmergency ? 'bg-destructive/10' : 'bg-card'} max-w-[92%] sm:max-w-[70%]`}>
                     <CardContent className={`p-3 sm:p-4 ${message.sender === 'user' ? 'border-primary/10' : 'border-border/10'}`}>
                       <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">{message.text}</p>
                       <p className="text-xs mt-2 opacity-70 text-muted-foreground">{message.timestamp.toLocaleTimeString()}</p>
