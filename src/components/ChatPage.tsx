@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { GoogleGenerativeAI, Content } from "@google/generative-ai"; 
+import { Groq } from 'groq-sdk';
+import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,24 +15,29 @@ interface Message {
   isEmergency?: boolean;
 }
 
-const GEMINI_API_KEY = "AIzaSyCV37Y5HDXwn9ZLHFEmGobXz52-Ry_GqDA"; 
+const GROQ_API_KEY = "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";
 
-// --- Gemini Setup with System Instruction (Logic) ---
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const AI_INSTRUCTION = "You are a close friend to the user. Talk exactly like a close friend, be casual, supportive, and informal.";
-
-const model = genAI.getGenerativeModel({ 
-  model: "gemini-2.5-flash",
-  systemInstruction: AI_INSTRUCTION, 
+// --- Groq Setup with System Instruction ---
+const groq = new Groq({
+  apiKey: GROQ_API_KEY, dangerouslyAllowBrowser: true
 });
 
-const fetchAIResponse = async (history: Content[]): Promise<Message> => {
+const AI_INSTRUCTION = "You are a close friend to the user. Talk exactly like a close friend, be casual, supportive, and informal.";
+
+const fetchAIResponse = async (messages: ChatCompletionMessageParam[]): Promise<Message> => {
   try {
-    const result = await model.generateContent({
-      contents: history,
+    const chatCompletion = await groq.chat.completions.create({
+      messages: messages,
+      model: "openai/gpt-oss-120b",
+      temperature: 1,
+      max_completion_tokens: 8192,
+      top_p: 1,
+      stream: false,
+      reasoning_effort: "medium",
+      stop: null,
     });
 
-    const aiText = result.response.text() || "Sorry, I couldn't understand that.";
+    const aiText = chatCompletion.choices[0]?.message?.content || "Sorry, I couldn't understand that.";
 
     return {
       id: Date.now().toString(),
@@ -41,7 +47,7 @@ const fetchAIResponse = async (history: Content[]): Promise<Message> => {
       isEmergency: false,
     };
   } catch (error: any) {
-    console.error("Gemini API error:", error);
+    console.error("Groq API error:", error);
     return {
       id: Date.now().toString(),
       text: "Sorry, there was a problem connecting to the AI service.",
@@ -84,23 +90,25 @@ const ChatPage = () => {
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // Don't add userMessage to messages yet - wait for AI response
     setInputMessage("");
     setIsLoading(true);
 
-    const conversationHistory: Content[] = messages.map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }]
+    const conversationHistory = messages.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.text
     }));
 
-    const newHistory: Content[] = [
+    const newHistory: ChatCompletionMessageParam[] = [
+      { role: "system", content: AI_INSTRUCTION },
       ...conversationHistory,
-      { role: 'user' as const, parts: [{ text: inputMessage }] }
+      { role: 'user', content: inputMessage }
     ];
 
     const aiResponse = await fetchAIResponse(newHistory);
 
-    setMessages(prev => [...prev, aiResponse]);
+    // Now add both user message and AI response
+    setMessages(prev => [...prev, userMessage, aiResponse]);
     setIsLoading(false);
 
     if (aiResponse.isEmergency) {
