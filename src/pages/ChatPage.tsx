@@ -1,6 +1,10 @@
 import { useState, useRef, useEffect } from "react";
+<<<<<<< HEAD:src/components/ChatPage.tsx
 import { Groq } from 'groq-sdk';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+=======
+import Groq from "groq-sdk";
+>>>>>>> main:src/pages/ChatPage.tsx
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,15 +19,23 @@ interface Message {
   isEmergency?: boolean;
 }
 
+<<<<<<< HEAD:src/components/ChatPage.tsx
 const GROQ_API_KEY = "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";
 
 // --- Groq Setup with System Instruction ---
 const groq = new Groq({
   apiKey: GROQ_API_KEY, dangerouslyAllowBrowser: true
+=======
+// --- Groq Setup (Logic) ---
+const groq = new Groq({
+  apiKey: import.meta.env.VITE_GROQ_API_KEY,
+  dangerouslyAllowBrowser: true // Required for client-side usage
+>>>>>>> main:src/pages/ChatPage.tsx
 });
 
 const AI_INSTRUCTION = "You are a close friend to the user. Talk exactly like a close friend, be casual, supportive, and informal.";
 
+<<<<<<< HEAD:src/components/ChatPage.tsx
 const fetchAIResponse = async (messages: ChatCompletionMessageParam[]): Promise<Message> => {
   try {
     const chatCompletion = await groq.chat.completions.create({
@@ -35,6 +47,13 @@ const fetchAIResponse = async (messages: ChatCompletionMessageParam[]): Promise<
       stream: false,
       reasoning_effort: "medium",
       stop: null,
+=======
+const fetchAIResponse = async (history: { role: "user" | "assistant" | "system"; content: string }[]): Promise<Message> => {
+  try {
+    const chatCompletion = await groq.chat.completions.create({
+      messages: history,
+      model: "llama3-8b-8192",
+>>>>>>> main:src/pages/ChatPage.tsx
     });
 
     const aiText = chatCompletion.choices[0]?.message?.content || "Sorry, I couldn't understand that.";
@@ -94,6 +113,7 @@ const ChatPage = () => {
     setInputMessage("");
     setIsLoading(true);
 
+<<<<<<< HEAD:src/components/ChatPage.tsx
     const conversationHistory = messages.map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
       content: msg.text
@@ -103,6 +123,18 @@ const ChatPage = () => {
       { role: "system", content: AI_INSTRUCTION },
       ...conversationHistory,
       { role: 'user', content: inputMessage }
+=======
+    // Prepare history for Groq (OpenAI format)
+    const conversationHistory = messages.map(msg => ({
+      role: (msg.sender === 'user' ? 'user' : 'assistant') as "user" | "assistant",
+      content: msg.text
+    }));
+
+    const newHistory = [
+      { role: "system" as const, content: AI_INSTRUCTION },
+      ...conversationHistory,
+      { role: "user" as const, content: inputMessage }
+>>>>>>> main:src/pages/ChatPage.tsx
     ];
 
     const aiResponse = await fetchAIResponse(newHistory);
@@ -167,7 +199,7 @@ const ChatPage = () => {
                       message.isEmergency ? <AlertTriangle size={16} /> : <Bot size={16} />}
                   </div>
 
-                  <Card className={`shadow-sm transition-colors ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : message.isEmergency ? 'bg-destructive/10' : 'bg-card' } max-w-[92%] sm:max-w-[70%]`}>
+                  <Card className={`shadow-sm transition-colors ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : message.isEmergency ? 'bg-destructive/10' : 'bg-card'} max-w-[92%] sm:max-w-[70%]`}>
                     <CardContent className={`p-3 sm:p-4 ${message.sender === 'user' ? 'border-primary/10' : 'border-border/10'}`}>
                       <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">{message.text}</p>
                       <p className="text-xs mt-2 opacity-70 text-muted-foreground">{message.timestamp.toLocaleTimeString()}</p>
