@@ -15,8 +15,13 @@ interface Message {
 }
 
 // --- Groq Setup (Logic) ---
+// const groq = new Groq({
+//   apiKey: import.meta.env.VITE_GROQ_API_KEY,
+//   dangerouslyAllowBrowser: true // Required for client-side usage
+// });
+
 const groq = new Groq({
-  apiKey: import.meta.env.VITE_GROQ_API_KEY,
+  apiKey: "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",
   dangerouslyAllowBrowser: true // Required for client-side usage
 });
 
@@ -26,7 +31,13 @@ const fetchAIResponse = async (history: { role: "user" | "assistant" | "system";
   try {
     const chatCompletion = await groq.chat.completions.create({
       messages: history,
-      model: "llama3-8b-8192",
+      model: "openai/gpt-oss-120b",
+      temperature: 1,
+      max_completion_tokens: 8192,
+      top_p: 1,
+      stream: false,
+      reasoning_effort: "medium",
+      stop: null,
     });
 
     const aiText = chatCompletion.choices[0]?.message?.content || "Sorry, I couldn't understand that.";
@@ -82,7 +93,7 @@ const ChatPage = () => {
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // Don't add userMessage to messages yet - wait for AI response
     setInputMessage("");
     setIsLoading(true);
 
@@ -100,7 +111,8 @@ const ChatPage = () => {
 
     const aiResponse = await fetchAIResponse(newHistory);
 
-    setMessages(prev => [...prev, aiResponse]);
+    // Now add both user message and AI response
+    setMessages(prev => [...prev, userMessage, aiResponse]);
     setIsLoading(false);
 
     if (aiResponse.isEmergency) {
