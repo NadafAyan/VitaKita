@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,11 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Send, MessageSquare, Users, Heart, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+import { auth } from "@/config/firebase";
+import { subscribeToForumPosts, addForumPost, supportPost } from "@/lib/firestoreService";
+
 interface ForumPost {
   id: string;
   userId: string;
   content: string;
-  timestamp: Date;
+  timestamp: any;
   supportCount: number;
   replies: ForumReply[];
   isAnonymous: boolean;
@@ -21,94 +24,75 @@ interface ForumReply {
   id: string;
   userId: string;
   content: string;
-  timestamp: Date;
+  timestamp: any;
   supportCount: number;
 }
 
 const ForumPage = () => {
   const [newPost, setNewPost] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [posts, setPosts] = useState<ForumPost[]>([]);
   const { toast } = useToast();
+  const user = auth.currentUser;
 
-  // Mock data - would be replaced with Firebase/Supabase real-time data
-  const [posts, setPosts] = useState<ForumPost[]>([
-    {
-      id: '1',
-      userId: 'anon_user_123',
-      content: "Feeling overwhelmed with finals coming up. Anyone else struggling with motivation? I know I should be studying but I just can't seem to focus.",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      supportCount: 7,
-      isAnonymous: true,
-      replies: [
-        {
-          id: 'r1',
-          userId: 'anon_user_456',
-          content: "I totally understand this feeling. What helps me is breaking things down into tiny tasks. Even just opening the textbook counts as a win!",
-          timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-          supportCount: 3,
-        }
-      ]
-    },
-    {
-      id: '2',
-      userId: 'anon_user_789',
-      content: "Just wanted to share that I finally reached out to the counseling center on campus. It took a lot of courage but I'm glad I did. If you're thinking about it, please consider it.",
-      timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-      supportCount: 12,
-      isAnonymous: true,
-      replies: []
-    }
-  ]);
+  useEffect(() => {
+    const unsubscribe = subscribeToForumPosts((fetchedPosts) => {
+      setPosts(fetchedPosts.map(post => ({
+        ...post,
+        timestamp: post.timestamp?.toDate() || new Date()
+      })));
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleSubmitPost = async () => {
-    if (!newPost.trim()) return;
+    if (!newPost.trim() || !user) return;
 
     setIsSubmitting(true);
-
-    // Simulate submission delay
-    setTimeout(() => {
-      const post: ForumPost = {
-        id: Date.now().toString(),
-        userId: `anon_user_${Math.floor(Math.random() * 1000)}`,
+    try {
+      await addForumPost({
+        userId: `anon_user_${user.uid.slice(0, 4)}`,
         content: newPost,
-        timestamp: new Date(),
-        supportCount: 0,
         isAnonymous: true,
         replies: []
-      };
+      });
 
-      setPosts(prev => [post, ...prev]);
       setNewPost("");
-      setIsSubmitting(false);
-
       toast({
         title: "Post shared",
         description: "Your anonymous post has been shared with the community.",
       });
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: "Submission failed",
+        description: "There was an error sharing your post.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSupport = (postId: string) => {
-    setPosts(prev =>
-      prev.map(post =>
-        post.id === postId
-          ? { ...post, supportCount: post.supportCount + 1 }
-          : post
-      )
-    );
-
-    toast({
-      title: "Support sent",
-      description: "Your support has been added to this post.",
-    });
+  const handleSupport = async (postId: string, currentSupport: number) => {
+    try {
+      await supportPost(postId, currentSupport);
+      toast({
+        title: "Support sent",
+        description: "Your support has been added to this post.",
+      });
+    } catch (error) {
+      console.error("Error supporting post:", error);
+    }
   };
 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 60) {
-      return `${diffInMinutes}m ago`;
+      return `${Math.max(0, diffInMinutes)}m ago`;
     } else if (diffInMinutes < 1440) {
       return `${Math.floor(diffInMinutes / 60)}h ago`;
     } else {
@@ -135,7 +119,7 @@ const ForumPage = () => {
               <div>
                 <h3 className="font-semibold mb-2">Community Guidelines</h3>
                 <p className="text-sm text-muted-foreground">
-                  This is a supportive space for peer connection. All posts are anonymous and moderated. 
+                  This is a supportive space for peer connection. All posts are anonymous and moderated.
                   If you're in crisis, please contact emergency services or your campus counseling center immediately.
                 </p>
               </div>
@@ -160,13 +144,13 @@ const ForumPage = () => {
                 className="min-h-[120px] border-border/30 bg-background/50"
                 disabled={isSubmitting}
               />
-              
+
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Users size={16} />
                   <span>Posted anonymously as anon_user_xxx</span>
                 </div>
-                
+
                 <Button
                   onClick={handleSubmitPost}
                   disabled={!newPost.trim() || isSubmitting}
@@ -191,7 +175,11 @@ const ForumPage = () => {
 
         {/* Posts */}
         <div className="space-y-6">
-          {posts.map((post) => (
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+            </div>
+          ) : posts.map((post) => (
             <Card key={post.id} className="shadow-gentle border-0 gradient-calm transition-therapeutic hover:shadow-therapeutic">
               <CardContent className="p-6">
                 {/* Post Header */}
@@ -205,7 +193,7 @@ const ForumPage = () => {
                       <p className="text-xs text-muted-foreground">{formatTimeAgo(post.timestamp)}</p>
                     </div>
                   </div>
-                  
+
                   <Badge variant="secondary" className="bg-secondary/50 border-0">
                     Anonymous
                   </Badge>
@@ -221,13 +209,13 @@ const ForumPage = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleSupport(post.id)}
+                    onClick={() => handleSupport(post.id, post.supportCount)}
                     className="text-muted-foreground hover:text-primary transition-gentle"
                   >
                     <Heart size={16} className="mr-1" />
                     <span>{post.supportCount}</span>
                   </Button>
-                  
+
                   {post.replies.length > 0 && (
                     <span className="text-xs text-muted-foreground">
                       {post.replies.length} {post.replies.length === 1 ? 'reply' : 'replies'}

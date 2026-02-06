@@ -5,6 +5,7 @@ import heroImage from "@/assets/hero-vitakita.jpg";
 import React, { useEffect, useMemo, useState } from "react";
 import { db } from "@/config/firebase";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { getCounselors, getSessions } from "@/lib/firestoreService";
 
 interface DashboardHomeProps {
   setActiveSection: (section: string) => void;
@@ -12,6 +13,30 @@ interface DashboardHomeProps {
 }
 
 const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
+  const [counselors, setCounselors] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [counselorsLoading, setCounselorsLoading] = useState(true);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (user?.uid) {
+        try {
+          const fetchedCounselors = await getCounselors();
+          setCounselors(fetchedCounselors);
+          setCounselorsLoading(false);
+
+          const fetchedSessions = await getSessions(user.uid);
+          setSessions(fetchedSessions);
+          setSessionsLoading(false);
+        } catch (error) {
+          console.error("Error fetching dashboard data:", error);
+        }
+      }
+    };
+    fetchDashboardData();
+  }, [user]);
+
   const features = [
     {
       icon: MessageCircle,
@@ -135,16 +160,6 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
     setShowDiagnostic(true);
   }
 
-  // --- Merged from CounselingPage: Counselors and Sessions ---
-  const counselors = [
-    { id: 1, name: "Dr. Sarah Johnson", specialty: "Anxiety & Depression", days: "Mon, Wed, Fri", modes: ["In-person", "Video", "Phone"], rating: 4.9, experience: 8 },
-    { id: 2, name: "Dr. Michael Chen", specialty: "Stress & Academic Pressure", days: "Tue, Thu, Sat", modes: ["In-person", "Video"], rating: 4.8, experience: 6 },
-    { id: 3, name: "Dr. Emily Rodriguez", specialty: "Relationship & Social Issues", days: "Mon–Thu", modes: ["In-person", "Video"], rating: 4.9, experience: 10 },
-  ];
-  const sessions = [
-    { id: 1, date: "Dec 8, 2024", time: "2:00 PM", counselor: "Dr. Sarah Johnson", status: "confirmed", mode: "Video Session" },
-    { id: 2, date: "Dec 15, 2024", time: "10:00 AM", counselor: "Dr. Emily Rodriguez", status: "pending", mode: "In-person" },
-  ];
   const [selectedCounselor, setSelectedCounselor] = useState<number | null>(null);
 
   return (
@@ -278,7 +293,12 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[{ label: 'Streak', value: '7 days', color: 'bg-blue-50 text-blue-700' }, { label: 'Mood Score', value: '8.2/10', color: 'bg-green-50 text-green-700' }, { label: 'Sessions', value: '12', color: 'bg-yellow-50 text-yellow-700' }, { label: 'Achievements', value: '5', color: 'bg-green-50 text-green-700' }].map((stat) => (
+              {[
+                { label: 'Streak', value: profile?.streak || '0 days', color: 'bg-blue-50 text-blue-700' },
+                { label: 'Mood Score', value: profile?.moodScore || 'N/A', color: 'bg-green-50 text-green-700' },
+                { label: 'Sessions', value: sessions.length.toString(), color: 'bg-yellow-50 text-yellow-700' },
+                { label: 'Achievements', value: profile?.achievements?.length?.toString() || '0', color: 'bg-green-50 text-green-700' }
+              ].map((stat) => (
                 <div key={stat.label} className={`rounded-xl shadow p-6 flex flex-col items-start space-y-2 ${stat.color}`}>
                   <div className="flex items-center space-x-2">
                     <Gauge />
@@ -295,19 +315,29 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
             <div className="bg-white rounded-xl shadow p-6">
               <h3 className="text-xl font-semibold text-gray-800 flex items-center mb-4"><Award size={20} className="mr-2 text-green-500" />Achievements</h3>
               <div className="space-y-3">
-                {["7-Day Streak", "Mindful Week", "First Assessment"].map((name, i) => (
-                  <div key={i} className={`rounded-full px-4 py-2 flex items-center space-x-2 ${i === 0 ? 'bg-green-100 text-green-700' : i === 1 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                    <Award size={16} />
-                    <span className="text-sm font-medium">{name}</span>
-                  </div>
-                ))}
+                {profile?.achievements?.length > 0 ? (
+                  profile.achievements.map((name: string, i: number) => (
+                    <div key={i} className="rounded-full px-4 py-2 flex items-center space-x-2 bg-green-100 text-green-700">
+                      <Award size={16} />
+                      <span className="text-sm font-medium">{name}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">No achievements yet. Keep going!</p>
+                )}
               </div>
             </div>
 
             <div className="bg-white rounded-xl shadow p-6">
               <h3 className="text-xl font-semibold text-gray-800 flex items-center mb-4"><MessageSquare size={20} className="mr-2 text-yellow-500" />Quick Actions</h3>
               <div className="space-y-3">
-                <button className="w-full py-3 px-4 rounded-lg bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2"><MessageSquare size={20} /><span>Start AI Chat</span></button>
+                <button
+                  className="w-full py-3 px-4 rounded-lg bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2"
+                  onClick={() => setActiveSection('chat')}
+                >
+                  <MessageSquare size={20} />
+                  <span>Start AI Chat</span>
+                </button>
                 <button className="w-full py-3 px-4 rounded-lg bg-gray-100 text-gray-800 font-semibold shadow-md hover:bg-gray-200 transition-colors duration-200" onClick={(e) => { e.preventDefault(); startRetake(); }}>Retake Diagnostic</button>
                 <button className="w-full py-3 px-4 rounded-lg bg-gray-100 text-gray-800 font-semibold shadow-md hover:bg-gray-200 transition-colors duration-200">Log Mood</button>
               </div>
@@ -316,12 +346,16 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
             <div className="w-full bg-white rounded-xl shadow p-6">
               <h3 className="text-xl font-semibold text-gray-800 flex items-center mb-4"><CalendarClock size={20} className="mr-2 text-blue-500" />Upcoming</h3>
               <div className="flex flex-col gap-3">
-                {[{ label: 'Counseling Session', description: 'Tomorrow at 2:00 PM', color: 'bg-blue-100', text: 'text-blue-700' }, { label: 'Weekly Check-in', description: 'Friday at 10:00 AM', color: 'bg-green-100', text: 'text-green-700' }].map((event) => (
-                  <div key={event.label} className={`rounded-lg ${event.color} ${event.text} px-4 py-3 shadow-sm`}>
-                    <div className="font-semibold">{event.label}</div>
-                    <div className="text-sm">{event.description}</div>
-                  </div>
-                ))}
+                {sessions.length > 0 ? (
+                  sessions.slice(0, 2).map((session) => (
+                    <div key={session.id} className="rounded-lg bg-blue-100 text-blue-700 px-4 py-3 shadow-sm">
+                      <div className="font-semibold">{session.counselorName || 'Counseling Session'}</div>
+                      <div className="text-sm">{session.date} at {session.time}</div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">No upcoming events.</p>
+                )}
               </div>
             </div>
           </div>
@@ -334,7 +368,13 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
           <div className="md:col-span-2 bg-white shadow-lg rounded-2xl p-6">
             <h2 className="text-xl font-bold mb-4">Choose Your Counselor</h2>
             <div className="space-y-4">
-              {counselors.map((counselor) => (
+              {counselorsLoading ? (
+                <div className="flex justify-center py-10">
+                  <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                </div>
+              ) : counselors.length === 0 ? (
+                <p className="text-center text-muted-foreground py-10">No counselors available at the moment.</p>
+              ) : counselors.map((counselor) => (
                 <div key={counselor.id} onClick={() => setSelectedCounselor(counselor.id)} className={`border rounded-xl p-4 cursor-pointer transition ${selectedCounselor === counselor.id ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'}`}>
                   <div className="flex items-center justify-between">
                     <div>
@@ -342,9 +382,9 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
                       <p className="text-sm text-gray-600">{counselor.specialty}</p>
                       <p className="text-sm text-gray-500 flex items-center mt-1"><Calendar className="w-4 h-4 mr-1" /> {counselor.days}</p>
                       <div className="flex gap-2 mt-2">
-                        {counselor.modes.includes('In-person') && (<span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">In-person</span>)}
-                        {counselor.modes.includes('Video') && (<span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded flex items-center"><Video className="w-3 h-3 mr-1" /> Video</span>)}
-                        {counselor.modes.includes('Phone') && (<span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded flex items-center"><Phone className="w-3 h-3 mr-1" /> Phone</span>)}
+                        {counselor.modes?.includes('In-person') && (<span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">In-person</span>)}
+                        {counselor.modes?.includes('Video') && (<span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded flex items-center"><Video className="w-3 h-3 mr-1" /> Video</span>)}
+                        {counselor.modes?.includes('Phone') && (<span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded flex items-center"><Phone className="w-3 h-3 mr-1" /> Phone</span>)}
                       </div>
                     </div>
                     <div className="text-right">
@@ -360,10 +400,16 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
           <div className="bg-white shadow-lg rounded-2xl p-6">
             <h2 className="text-xl font-bold mb-4">Upcoming Sessions</h2>
             <div className="space-y-3">
-              {sessions.map((session) => (
+              {sessionsLoading ? (
+                <div className="flex justify-center py-10">
+                  <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                </div>
+              ) : sessions.length === 0 ? (
+                <p className="text-center text-muted-foreground py-10 text-sm">No upcoming sessions.</p>
+              ) : sessions.map((session) => (
                 <div key={session.id} className="p-3 border rounded-xl flex flex-col gap-1">
                   <p className="font-medium">{session.date} - {session.time}</p>
-                  <p className="text-sm text-gray-600">{session.counselor}</p>
+                  <p className="text-sm text-gray-600">{session.counselorName || session.counselor}</p>
                   <p className="text-sm text-gray-500">{session.mode}</p>
                   <span className={`text-xs font-medium px-2 py-1 rounded w-fit ${session.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{session.status}</span>
                 </div>
