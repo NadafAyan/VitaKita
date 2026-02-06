@@ -4,13 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCDiXYUV33li8xlmUFUvlxm6q7oWjgNHtw",
-  authDomain: "vitakita-c587a.firebaseapp.com",
-  projectId: "vitakita-c587a",
-  storageBucket: "vitakita-c587a.appspot.com",
-  messagingSenderId: "880691647526",
-  appId: "1:880691647526:web:c4fdcaf213ab9062e242e7",
-  measurementId: "G-5TYTHHFDVV"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
