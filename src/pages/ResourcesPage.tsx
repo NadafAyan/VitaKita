@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, BookOpen, Video, Headphones, Clock, ExternalLink } from "lucide-react";
+import { auth } from "@/config/firebase";
+import { getResources } from "@/lib/firestoreService";
 
 interface Resource {
   id: string;
@@ -13,75 +15,30 @@ interface Resource {
   category: string;
   duration: string;
   tags: string[];
-  link?: string; // 🔹 added link field
+  link?: string;
 }
 
 const ResourcesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [resources, setResources] = useState<Resource[]>([]);
 
-  const resources: Resource[] = [
-    {
-      id: '1',
-      title: 'Understanding Academic Stress',
-      description: 'Learn about the common causes of academic stress and how to identify early warning signs.',
-      type: 'article',
-      category: 'stress',
-      duration: '5 min read',
-      tags: ['stress', 'academic', 'awareness'],
-      link: 'https://jedfoundation.org/resource/understanding-academic-stress/'
-    },
-    {
-      id: '2',
-      title: 'Breathing Techniques for Anxiety',
-      description: 'Guided breathing exercises to help calm anxiety in moments of stress.',
-      type: 'audio',
-      category: 'anxiety',
-      duration: '10 min',
-      tags: ['anxiety', 'breathing', 'relaxation'],
-      link: 'https://www.jiosaavn.com/song/meditation-music/Bxo7YyNKYkQ'
-    },
-    {
-      id: '3',
-      title: 'Sleep Hygiene for Students',
-      description: 'Essential sleep practices to improve your mental health and academic performance.',
-      type: 'video',
-      category: 'wellness',
-      duration: '15 min',
-      tags: ['sleep', 'wellness', 'habits'],
-      link: 'https://youtu.be/gedoSfZvBgE?si=_Okcmi2u-MQtW3da'
-    },
-    {
-      id: '4',
-      title: 'Managing Perfectionism',
-      description: 'Strategies to overcome perfectionist tendencies that can lead to burnout.',
-      type: 'article',
-      category: 'self-care',
-      duration: '8 min read',
-      tags: ['perfectionism', 'self-care', 'mindset'],
-      link: 'https://positivepsychology.com/how-to-overcome-perfectionism/'
-    },
-    {
-      id: '5',
-      title: 'Progressive Muscle Relaxation',
-      description: 'A guided session to release physical tension and promote relaxation.',
-      type: 'audio',
-      category: 'relaxation',
-      duration: '20 min',
-      tags: ['relaxation', 'body', 'tension'],
-      link: 'https://youtu.be/SNqYG95j_UQ?si=hCliW_g7XJtiu1cO'
-    },
-    {
-      id: '6',
-      title: 'Relaxation music for stress relief',
-      description: 'Soothing music tracks to help you relax and unwind.',
-      type: 'video',
-      category: 'resilience',
-      duration: '12 min',
-      tags: ['resilience', 'coping', 'mindset'],
-      link: 'https://youtu.be/XIS9XHqTIZo?si=9q_aV-nDFaWbjYIq'
-    },
-  ];
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const data = await getResources();
+        if (data.length > 0) {
+          setResources(data as Resource[]);
+        }
+      } catch (error) {
+        console.error("Error fetching resources:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchResources();
+  }, []);
 
   const categories = [
     { id: 'all', label: 'All Resources' },
@@ -95,11 +52,11 @@ const ResourcesPage = () => {
 
   const filteredResources = resources.filter(resource => {
     const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         resource.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    
+      resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      resource.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+
     const matchesCategory = selectedCategory === 'all' || resource.category === selectedCategory;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -163,7 +120,11 @@ const ResourcesPage = () => {
 
         {/* Resources Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredResources.map((resource) => {
+          {isLoading ? (
+            <div className="col-span-full flex justify-center py-10">
+              <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+            </div>
+          ) : filteredResources.map((resource) => {
             const IconComponent = getIcon(resource.type);
             return (
               <a
@@ -194,17 +155,17 @@ const ResourcesPage = () => {
                     <CardDescription className="text-sm mb-4">
                       {resource.description}
                     </CardDescription>
-                    
+
                     <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
                       <Clock size={14} />
                       <span>{resource.duration}</span>
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-1">
                       {resource.tags.map((tag) => (
-                        <Badge 
-                          key={tag} 
-                          variant="secondary" 
+                        <Badge
+                          key={tag}
+                          variant="secondary"
                           className="text-xs bg-secondary/50 border-0"
                         >
                           {tag}
