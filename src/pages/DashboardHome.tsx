@@ -20,7 +20,8 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      if (user?.uid) {
+      // Safety check: ensure we have a valid UID before attempting any Firestore call
+      if (user && user.uid) {
         try {
           const fetchedCounselors = await getCounselors();
           setCounselors(fetchedCounselors);
@@ -30,12 +31,12 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
           setSessions(fetchedSessions);
           setSessionsLoading(false);
         } catch (error) {
-          console.error("Error fetching dashboard data:", error);
+          console.error("Dashboard data fetch error:", error);
         }
       }
     };
     fetchDashboardData();
-  }, [user]);
+  }, [user?.uid]); // Use user.uid as dependency specifically
 
   const features = [
     {
