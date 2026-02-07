@@ -81,7 +81,7 @@ const ChatPage = () => {
 
   useEffect(() => {
     const loadHistory = async () => {
-      if (user) {
+      if (user && user.uid) {
         try {
           const history = await getChatHistory(user.uid);
           if (history.length > 0) {
@@ -100,14 +100,14 @@ const ChatPage = () => {
             }]);
           }
         } catch (error) {
-          console.error("Error loading chat history:", error);
+          console.error("Chat history load error:", error);
         } finally {
           setIsHistoryLoading(false);
         }
       }
     };
     loadHistory();
-  }, [user]);
+  }, [user?.uid]);
 
   useEffect(() => {
     scrollToBottom();
