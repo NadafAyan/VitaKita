@@ -24,7 +24,6 @@ service cloud.firestore {
     // Forum Posts collection
     match /forum_posts/{postId} {
       allow read, create: if isSignedIn();
-      // Allow update if the user is the owner OR if ONLY supportCount is changing
       allow update: if isSignedIn() && (
         isOwner(resource.data.userId) || 
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['supportCount']))
@@ -32,7 +31,7 @@ service cloud.firestore {
       allow delete: if isOwner(resource.data.userId);
     }
 
-    // Chats collection
+    // Chats collection (Keeping rules just in case, but code won't use it)
     match /chats/{userId} {
       allow read, write: if isOwner(userId);
     }
@@ -48,11 +47,8 @@ service cloud.firestore {
 
     // Sessions collection
     match /sessions/{sessionId} {
-      allow read, write: if isSignedIn() && (
-        resource == null || // Allow create
-        resource.data.userId == request.auth.uid || 
-        request.resource.data.userId == request.auth.uid
-      );
+      allow read, create: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
   }
 }
