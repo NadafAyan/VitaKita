@@ -14,17 +14,6 @@ interface Message {
   isEmergency?: boolean;
 }
 
-import { auth } from "@/config/firebase";
-import { saveChatMessage, getChatHistory } from "@/lib/firestoreService";
-
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'ai';
-  timestamp: Date;
-  isEmergency?: boolean;
-}
-
 // --- Groq Setup (Logic) ---
 const groq = new Groq({
   apiKey: import.meta.env.VITE_GROQ_API_KEY,
@@ -67,54 +56,30 @@ const fetchAIResponse = async (history: { role: "user" | "assistant" | "system";
 };
 
 const ChatPage = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      text: "Hello! I'm VitaBot. I'm here to provide supportive guidance and coping strategies. How are you feeling today?",
+      sender: 'ai',
+      timestamp: new Date(),
+      isEmergency: false,
+    }
+  ]);
   const [inputMessage, setInputMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isHistoryLoading, setIsHistoryLoading] = useState<boolean>(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const user = auth.currentUser;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
-    const loadHistory = async () => {
-      if (user && user.uid) {
-        try {
-          const history = await getChatHistory(user.uid);
-          if (history.length > 0) {
-            setMessages(history.map((msg: any) => ({
-              ...msg,
-              timestamp: msg.timestamp?.toDate() || new Date()
-            })));
-          } else {
-            // Default welcome message if no history
-            setMessages([{
-              id: '1',
-              text: "Hello! I'm VitaBot. I'm here to provide supportive guidance and coping strategies. How are you feeling today?",
-              sender: 'ai',
-              timestamp: new Date(),
-              isEmergency: false,
-            }]);
-          }
-        } catch (error) {
-          console.error("Chat history load error:", error);
-        } finally {
-          setIsHistoryLoading(false);
-        }
-      }
-    };
-    loadHistory();
-  }, [user?.uid]);
-
-  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || !user) return;
+    if (!inputMessage.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -122,9 +87,6 @@ const ChatPage = () => {
       sender: 'user',
       timestamp: new Date(),
     };
-
-    // Save user message to Firestore
-    await saveChatMessage(user.uid, userMessage);
 
     setMessages(prev => [...prev, userMessage]);
     setInputMessage("");
@@ -143,9 +105,6 @@ const ChatPage = () => {
     ];
 
     const aiResponse = await fetchAIResponse(newHistory);
-
-    // Save AI response to Firestore
-    await saveChatMessage(user.uid, aiResponse);
 
     setMessages(prev => [...prev, aiResponse]);
     setIsLoading(false);
@@ -195,32 +154,27 @@ const ChatPage = () => {
             aria-live="polite"
             aria-relevant="additions"
           >
-            {isHistoryLoading ? (
-              <div className="flex justify-center py-10">
-                <Loader2 size={24} className="animate-spin text-primary" />
-              </div>
-            ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} px-1`}
-                >
-                  <div className={`flex items-start gap-3 max-w-full ${message.sender === 'user' ? 'sm:ml-auto sm:mr-0' : ''}`}>
-                    <div className={`p-2 rounded-full shrink-0 ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : message.isEmergency ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-secondary-foreground'}`}>
-                      {message.sender === 'user' ? <User size={16} /> :
-                        message.isEmergency ? <AlertTriangle size={16} /> : <Bot size={16} />}
-                    </div>
-
-                    <Card className={`shadow-sm transition-colors ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : message.isEmergency ? 'bg-destructive/10' : 'bg-card'} max-w-[92%] sm:max-w-[70%]`}>
-                      <CardContent className={`p-3 sm:p-4 ${message.sender === 'user' ? 'border-primary/10' : 'border-border/10'}`}>
-                        <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">{message.text}</p>
-                        <p className="text-xs mt-2 opacity-70 text-muted-foreground">{message.timestamp.toLocaleTimeString()}</p>
-                      </CardContent>
-                    </Card>
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} px-1`}
+              >
+                <div className={`flex items-start gap-3 max-w-full ${message.sender === 'user' ? 'sm:ml-auto sm:mr-0' : ''}`}>
+                  <div className={`p-2 rounded-full shrink-0 ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : message.isEmergency ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-secondary-foreground'}`}>
+                    {message.sender === 'user' ? <User size={16} /> :
+                      message.isEmergency ? <AlertTriangle size={16} /> : <Bot size={16} />}
                   </div>
+
+                  <Card className={`shadow-sm transition-colors ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : message.isEmergency ? 'bg-destructive/10' : 'bg-card'} max-w-[92%] sm:max-w-[70%]`}>
+                    <CardContent className={`p-3 sm:p-4 ${message.sender === 'user' ? 'border-primary/10' : 'border-border/10'}`}>
+                      <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">{message.text}</p>
+                      <p className="text-xs mt-2 opacity-70 text-muted-foreground">{message.timestamp.toLocaleTimeString()}</p>
+                    </CardContent>
+                  </Card>
                 </div>
-              ))
-            )}
+              </div>
+            ))
+            }
 
             {isLoading && (
               <div className="flex justify-start px-1">
