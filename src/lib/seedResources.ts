@@ -44,22 +44,59 @@ const resourcesData = [
     }
 ];
 
-export const seedResources = async () => {
+const counselorsData = [
+    {
+        name: "Dr. Sarah Johnson",
+        specialty: "Anxiety & Depression",
+        days: "Mon, Wed, Fri",
+        modes: ["In-person", "Video", "Phone"],
+        rating: 4.9,
+        experience: 8
+    },
+    {
+        name: "Dr. Michael Chen",
+        specialty: "Stress & Academic Pressure",
+        days: "Tue, Thu, Sat",
+        modes: ["In-person", "Video"],
+        rating: 4.8,
+        experience: 6
+    },
+    {
+        name: "Dr. Emily Rodriguez",
+        specialty: "Relationship & Social Issues",
+        days: "Mon–Thu",
+        modes: ["In-person", "Video"],
+        rating: 4.9,
+        experience: 10
+    }
+];
+
+export const seedInitialData = async () => {
+    // --- Seed Resources ---
     const resourcesRef = collection(db, "resources");
+    const resSnapshot = await getDocs(query(resourcesRef, limit(1)));
 
-    // Check if already seeded to avoid duplicates
-    const q = query(resourcesRef, limit(1));
-    const snapshot = await getDocs(q);
-
-    if (!snapshot.empty) {
+    if (resSnapshot.empty) {
+        console.log("Seeding resources...");
+        for (const resource of resourcesData) {
+            await addDoc(resourcesRef, resource);
+        }
+    } else {
         console.log("Resources already seeded.");
-        return false;
     }
 
-    console.log("Seeding resources...");
-    for (const resource of resourcesData) {
-        await addDoc(resourcesRef, resource);
+    // --- Seed Counselors ---
+    const counselorsRef = collection(db, "counselors");
+    const counSnapshot = await getDocs(query(counselorsRef, limit(1)));
+
+    if (counSnapshot.empty) {
+        console.log("Seeding counselors...");
+        for (const counselor of counselorsData) {
+            await addDoc(counselorsRef, counselor);
+        }
+    } else {
+        console.log("Counselors already seeded.");
     }
-    console.log("Seeding complete!");
-    return true;
+
+    console.log("Initial data seeding process finished.");
 };
