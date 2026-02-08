@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { db } from "@/config/firebase";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { getCounselors, getSessions } from "@/lib/firestoreService";
+import { seedInitialData } from "@/lib/seedResources";
 
 interface DashboardHomeProps {
   setActiveSection: (section: string) => void;
@@ -19,6 +20,9 @@ const DashboardHome = ({ setActiveSection, user }: DashboardHomeProps) => {
   const [sessionsLoading, setSessionsLoading] = useState(true);
 
   useEffect(() => {
+    // Seed initial data if collections are empty
+    seedInitialData();
+
     const fetchDashboardData = async () => {
       // Safety check: ensure we have a valid UID before attempting any Firestore call
       if (user && user.uid) {
