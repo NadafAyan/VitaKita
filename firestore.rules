@@ -18,7 +18,8 @@ service cloud.firestore {
     // Resources collection
     match /resources/{resourceId} {
       allow read: if isSignedIn();
-      allow write: if false; 
+      allow create: if isSignedIn();
+      allow update, delete: if false; 
     }
 
     // Forum Posts collection
@@ -42,7 +43,8 @@ service cloud.firestore {
     // Counselors collection
     match /counselors/{counselorId} {
       allow read: if isSignedIn();
-      allow write: if false;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
     }
 
     // Sessions collection
