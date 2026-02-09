@@ -2,26 +2,26 @@ import { useState } from "react";
 import { Calendar, Video, Phone, Star } from "lucide-react";
 
 // Counselor type
-type Counselor = {
-  id: number;
-  name: string;
-  specialty: string;
-  days: string;
-  modes: string[];
-  rating: number;
-  experience: number;
-  location: string;
-};
+// type Counselor = {
+//   id: number;
+//   name: string;
+//   specialty: string;
+//   days: string;
+//   modes: string[];
+//   rating: number;
+//   experience: number;
+//   location: string;
+// };
 
-// Session type
-type Session = {
-  id: number;
-  date: string;
-  time: string;
-  counselor: string;
-  status: "confirmed" | "pending";
-  mode: string;
-};
+// // Session type
+// type Session = {
+//   id: number;
+//   date: string;
+//   time: string;
+//   counselor: string;
+//   status: "confirmed" | "pending";
+//   mode: string;
+// };
 
 // Dummy data
 // const counselors: Counselor[] = [
@@ -55,7 +55,103 @@ type Session = {
 // ];
 
 // Real Data
-const counselors: Counselor[] = [
+// const counselors: Counselor[] = [
+//   {
+//     id: 1,
+//     name: "Dr. Bhooshan Shukla",
+//     specialty: "Child & Adolescent Psychiatry",
+//     days: "Mon, Wed, Fri",
+//     modes: ["In-person", "Video"],
+//     rating: 5.0,
+//     experience: 25,
+//     location: "Erandwane, Pune",
+//   },
+//   {
+//     id: 2,
+//     name: "Dr. Ashutosh Shrivastava",
+//     specialty: "Clinical Psychology & CBT",
+//     days: "Tue, Thu, Sat",
+//     modes: ["In-person", "Video", "Phone"],
+//     rating: 4.8,
+//     experience: 18,
+//     location: "Shivajinagar, Pune",
+//   },
+//   {
+//     id: 3,
+//     name: "Ms. Hvovi Bhagwagar",
+//     specialty: "Trauma, CBT & Depression",
+//     days: "Mon–Thu",
+//     modes: ["Video", "Phone"],
+//     rating: 4.9,
+//     experience: 22,
+//     location: "Aundh, Pune",
+//   },
+//   {
+//     id: 4,
+//     name: "Dr. Soumitra Pathare",
+//     specialty: "Mental Health Policy & Psychiatry",
+//     days: "By Appointment",
+//     modes: ["In-person", "Video"],
+//     rating: 4.9,
+//     experience: 30,
+//     location: "Viman Nagar, Pune",
+//   },
+//   {
+//     id: 5,
+//     name: "Ms. Tanuja Babre",
+//     specialty: "Youth Counseling & Student Wellness",
+//     days: "Mon, Tue, Fri",
+//     modes: ["Video", "Phone"],
+//     rating: 4.7,
+//     experience: 12,
+//     location: "Kothrud, Pune",
+//   }
+// ];
+
+// const sessions: Session[] = [
+//   {
+//     id: 1,
+//     date: "Dec 8, 2024",
+//     time: "2:00 PM",
+//     counselor: "Dr. Sarah Johnson",
+//     status: "confirmed",
+//     mode: "Video Session",
+//   },
+//   {
+//     id: 2,
+//     date: "Dec 15, 2024",
+//     time: "10:00 AM",
+//     counselor: "Dr. Emily Rodriguez",
+//     status: "pending",
+//     mode: "In-person",
+//   },
+// ];
+
+type CounselingPageProps = {
+  user: any;
+};
+
+export interface Counselor {
+  id: number;
+  name: string;
+  specialty: string;
+  days: string;
+  modes: string[];
+  rating: number;
+  experience: number;
+  location?: string;
+}
+
+export interface Session {
+  id: number;
+  date: string;
+  time: string;
+  counselor: string;
+  status: "confirmed" | "pending" | "completed" | "cancelled";
+  mode: string;
+}
+
+export const counselors: Counselor[] = [
   {
     id: 1,
     name: "Dr. Bhooshan Shukla",
@@ -108,28 +204,32 @@ const counselors: Counselor[] = [
   }
 ];
 
-const sessions: Session[] = [
+export const sessions: Session[] = [
   {
     id: 1,
-    date: "Dec 8, 2024",
-    time: "2:00 PM",
-    counselor: "Dr. Sarah Johnson",
+    date: "Feb 12, 2026",
+    time: "4:00 PM",
+    counselor: "Dr. Bhooshan Shukla",
     status: "confirmed",
-    mode: "Video Session",
+    mode: "In-person (Erandwane)",
   },
   {
     id: 2,
-    date: "Dec 15, 2024",
-    time: "10:00 AM",
-    counselor: "Dr. Emily Rodriguez",
+    date: "Feb 15, 2026",
+    time: "11:30 AM",
+    counselor: "Ms. Hvovi Bhagwagar",
     status: "pending",
-    mode: "In-person",
+    mode: "Video Session",
   },
+  {
+    id: 3,
+    date: "Jan 28, 2026",
+    time: "10:00 AM",
+    counselor: "Ms. Tanuja Babre",
+    status: "completed",
+    mode: "Phone Call",
+  }
 ];
-
-type CounselingPageProps = {
-  user: any;
-};
 
 const CounselingPage = ({ user }: CounselingPageProps) => {
   const [selectedCounselor, setSelectedCounselor] = useState<number | null>(
