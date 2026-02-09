@@ -10,6 +10,7 @@ type Counselor = {
   modes: string[];
   rating: number;
   experience: number;
+  location: string;
 };
 
 // Session type
@@ -23,34 +24,88 @@ type Session = {
 };
 
 // Dummy data
+// const counselors: Counselor[] = [
+//   {
+//     id: 1,
+//     name: "Dr. Sarah Johnson",
+//     specialty: "Anxiety & Depression",
+//     days: "Mon, Wed, Fri",
+//     modes: ["In-person", "Video", "Phone"],
+//     rating: 4.9,
+//     experience: 8,
+//   },
+//   {
+//     id: 2,
+//     name: "Dr. Michael Chen",
+//     specialty: "Stress & Academic Pressure",
+//     days: "Tue, Thu, Sat",
+//     modes: ["In-person", "Video"],
+//     rating: 4.8,
+//     experience: 6,
+//   },
+//   {
+//     id: 3,
+//     name: "Dr. Emily Rodriguez",
+//     specialty: "Relationship & Social Issues",
+//     days: "Mon–Thu",
+//     modes: ["In-person", "Video"],
+//     rating: 4.9,
+//     experience: 10,
+//   },
+// ];
+
+// Real Data
 const counselors: Counselor[] = [
   {
     id: 1,
-    name: "Dr. Sarah Johnson",
-    specialty: "Anxiety & Depression",
+    name: "Dr. Bhooshan Shukla",
+    specialty: "Child & Adolescent Psychiatry",
     days: "Mon, Wed, Fri",
-    modes: ["In-person", "Video", "Phone"],
-    rating: 4.9,
-    experience: 8,
+    modes: ["In-person", "Video"],
+    rating: 5.0,
+    experience: 25,
+    location: "Erandwane, Pune",
   },
   {
     id: 2,
-    name: "Dr. Michael Chen",
-    specialty: "Stress & Academic Pressure",
+    name: "Dr. Ashutosh Shrivastava",
+    specialty: "Clinical Psychology & CBT",
     days: "Tue, Thu, Sat",
-    modes: ["In-person", "Video"],
+    modes: ["In-person", "Video", "Phone"],
     rating: 4.8,
-    experience: 6,
+    experience: 18,
+    location: "Shivajinagar, Pune",
   },
   {
     id: 3,
-    name: "Dr. Emily Rodriguez",
-    specialty: "Relationship & Social Issues",
+    name: "Ms. Hvovi Bhagwagar",
+    specialty: "Trauma, CBT & Depression",
     days: "Mon–Thu",
+    modes: ["Video", "Phone"],
+    rating: 4.9,
+    experience: 22,
+    location: "Aundh, Pune",
+  },
+  {
+    id: 4,
+    name: "Dr. Soumitra Pathare",
+    specialty: "Mental Health Policy & Psychiatry",
+    days: "By Appointment",
     modes: ["In-person", "Video"],
     rating: 4.9,
-    experience: 10,
+    experience: 30,
+    location: "Viman Nagar, Pune",
   },
+  {
+    id: 5,
+    name: "Ms. Tanuja Babre",
+    specialty: "Youth Counseling & Student Wellness",
+    days: "Mon, Tue, Fri",
+    modes: ["Video", "Phone"],
+    rating: 4.7,
+    experience: 12,
+    location: "Kothrud, Pune",
+  }
 ];
 
 const sessions: Session[] = [
@@ -121,6 +176,9 @@ const CounselingPage = ({ user }: CounselingPageProps) => {
                       </span>
                     )}
                   </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    <span className="font-medium">Location:</span> {counselor.location}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="flex items-center text-yellow-500 font-medium">
