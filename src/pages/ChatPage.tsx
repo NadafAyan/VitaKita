@@ -5,22 +5,78 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Send, Bot, User, AlertTriangle, Heart, Loader2 } from "lucide-react";
 
 /* =========================
-   Backend API Call
+   Serverless AI API Calls (HuggingFace)
 ========================= */
-async function sendToBackend(message) {
-  const response = await fetch("http://127.0.0.1:8000/chat", {
+const HF_TOKEN = import.meta.env.VITE_HF_TOKEN;
+const CLASSIFICATION_MODEL = "YashKumar11/vitagita-model";
+const CHAT_MODEL = "moonshotai/Kimi-K2-Instruct-0905";
+
+const id2label: Record<number, string> = {
+  0: "Crisis",
+  1: "Depression",
+  2: "Neutral",
+  3: "Normal",
+  4: "Stress"
+};
+
+const CRISIS_KEYWORDS = [
+  "kill myself", "suicide", "end my life", "hang myself", "overdose", "jump off"
+];
+
+async function queryClassification(text: string) {
+  const response = await fetch(
+    `https://api-inference.huggingface.co/models/${CLASSIFICATION_MODEL}`,
+    {
+      headers: { Authorization: `Bearer ${HF_TOKEN}` },
+      method: "POST",
+      body: JSON.stringify({ inputs: text }),
+    }
+  );
+  const result = await response.json();
+  // The classification model returns an array of scores
+  if (Array.isArray(result) && result[0]) {
+    // Some models return scores directly, others return them nested
+    const scores = Array.isArray(result[0]) ? result[0] : result;
+    const topClass = scores.reduce((prev: any, current: any) => (prev.score > current.score) ? prev : current);
+    // Extract index from label (e.g., "LABEL_0" -> 0)
+    const labelIdx = parseInt(topClass.label.replace("LABEL_", ""));
+    return { label: id2label[labelIdx] || "Neutral", score: topClass.score };
+  }
+  return { label: "Neutral", score: 0.0 };
+}
+
+async function queryChat(userText: string, label: string, history: any[]) {
+  const systemPrompt = `You are a calm, empathetic mental-health support assistant.
+Rules:
+- Do NOT give medical advice
+- Do NOT suggest medication
+- Do NOT panic unless user shows real suicidal intent
+- Be supportive and short
+- Ask gentle follow-up questions
+User mental state: ${label}`;
+
+  const messages = [
+    { role: "system", content: systemPrompt },
+    ...history,
+    { role: "user", content: userText }
+  ];
+
+  const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
     method: "POST",
     headers: {
+      Authorization: `Bearer ${HF_TOKEN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({
+      model: CHAT_MODEL,
+      messages: messages,
+      temperature: 0.6,
+      max_tokens: 200,
+    }),
   });
 
-  if (!response.ok) {
-    throw new Error("Backend error");
-  }
-
-  return await response.json();
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || "I'm here for you.";
 }
 
 /* =========================
@@ -62,6 +118,7 @@ const ChatPage = () => {
         sender: "user",
         text: userText,
         timestamp: new Date(),
+        isEmergency: false,
       },
     ]);
 
@@ -69,25 +126,52 @@ const ChatPage = () => {
     setIsLoading(true);
 
     try {
-      const data = await sendToBackend(userText);
+      // -------- Crisis Immediate Override --------
+      const lowerText = userText.toLowerCase().trim();
+      if (CRISIS_KEYWORDS.some(k => lowerText.includes(k))) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            sender: "bot",
+            text: "🚨 I’m really sorry you’re feeling this way.\n\nPlease reach out immediately:\n📞 India Suicide Helpline: 9152987821\n📞 AASRA: 91-9820466726\n📞 Emergency: 112\n\nYou are not alone. Help is available.",
+            timestamp: new Date(),
+            isEmergency: true,
+          },
+        ]);
+        return;
+      }
+
+      // -------- Get Mental State Classification --------
+      const { label } = await queryClassification(userText);
+
+      // -------- Get History --------
+      const chatHistory = messages.slice(-10).map(msg => ({
+        role: msg.sender === "user" ? "user" : "assistant",
+        content: msg.text
+      }));
+
+      // -------- Generate AI Response --------
+      const reply = await queryChat(userText, label, chatHistory);
 
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           sender: "bot",
-          text: data.reply,
+          text: reply,
           timestamp: new Date(),
-          isEmergency: data.label === "Crisis",
+          isEmergency: label === "Crisis",
         },
       ]);
     } catch (error) {
+      console.error("AI Error:", error);
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           sender: "bot",
-          text: "⚠️ Unable to connect to the server. Please try again.",
+          text: "⚠️ Unable to connect to the AI service. Please try again.",
           timestamp: new Date(),
           isEmergency: true,
         },
@@ -132,23 +216,20 @@ const ChatPage = () => {
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${
-                message.sender === "user" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"
+                }`}
             >
               <div
-                className={`flex items-start gap-3 max-w-[80%] ${
-                  message.sender === "user" ? "flex-row-reverse" : ""
-                }`}
+                className={`flex items-start gap-3 max-w-[80%] ${message.sender === "user" ? "flex-row-reverse" : ""
+                  }`}
               >
                 <div
-                  className={`p-2 rounded-full ${
-                    message.sender === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : message.isEmergency
+                  className={`p-2 rounded-full ${message.sender === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : message.isEmergency
                       ? "bg-destructive text-destructive-foreground"
                       : "bg-secondary text-secondary-foreground"
-                  }`}
+                    }`}
                 >
                   {message.sender === "user" ? (
                     <User size={16} />
@@ -160,13 +241,12 @@ const ChatPage = () => {
                 </div>
 
                 <Card
-                  className={`shadow-gentle transition-gentle ${
-                    message.sender === "user"
-                      ? "bg-primary text-primary-foreground border-primary/20"
-                      : message.isEmergency
+                  className={`shadow-gentle transition-gentle ${message.sender === "user"
+                    ? "bg-primary text-primary-foreground border-primary/20"
+                    : message.isEmergency
                       ? "bg-destructive/10 border-destructive/20"
                       : "bg-card border-border/20"
-                  }`}
+                    }`}
                 >
                   <CardContent className="p-4">
                     <p className="text-sm whitespace-pre-wrap">
