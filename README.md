@@ -209,7 +209,7 @@ VITAKITA was built using these incredible open-source tools and platforms:
 
 This project is wholeheartedly dedicated to my best friend,
 
-[Nikita](https://github.com/nikita1011n)😊✨
+[Nikita](https://github.com/Nikita-Jadhav-dev)😊✨
 
 Thank you for being my personal therapist, my constant support system, and the quiet inspiration behind the care put into this work.
 
