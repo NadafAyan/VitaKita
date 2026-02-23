@@ -12,27 +12,67 @@ const CRISIS_KEYWORDS = [
 ];
 
 async function queryClassification(text: string) {
-  const response = await fetch("/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ type: "classify", message: text }),
-  });
-  return await response.json();
+  try {
+    const response = await fetch("/api/classify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inputs: text }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (Array.isArray(result) && result[0]) {
+      const scores = Array.isArray(result[0]) ? result[0] : result;
+      const topClass = scores.reduce((prev: any, current: any) => (prev.score > current.score) ? prev : current);
+      // Mapping is now handled in frontend for dev simplicity
+      const id2label: Record<number, string> = { 0: "Crisis", 1: "Depression", 2: "Neutral", 3: "Normal", 4: "Stress" };
+      const labelIdx = parseInt(topClass.label.replace("LABEL_", ""));
+      return { label: id2label[labelIdx] || "Neutral", score: topClass.score };
+    }
+    return { label: "Neutral", score: 0.0 };
+  } catch (error: any) {
+    console.error("Classification error:", error);
+    throw error;
+  }
 }
 
 async function queryChat(userText: string, label: string, history: any[]) {
-  const response = await fetch("/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      type: "chat",
-      message: userText,
-      label: label,
-      history: history,
-    }),
-  });
-  const data = await response.json();
-  return data.reply;
+  try {
+    const CHAT_MODEL = "moonshotai/Kimi-K2-Instruct-0905";
+    const systemPrompt = `You are a calm, empathetic mental-health support assistant.
+Rules: - Do NOT give medical advice - Do NOT suggest medication - Do NOT panic unless user shows real suicidal intent - Be supportive and short - Ask gentle follow-up questions
+User mental state: ${label}`;
+
+    const messages = [
+      { role: "system", content: systemPrompt },
+      ...history,
+      { role: "user", content: userText }
+    ];
+
+    const response = await fetch("/api/chat-hf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: CHAT_MODEL,
+        messages: messages,
+        temperature: 0.6,
+        max_tokens: 200,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || "I'm here for you.";
+  } catch (error: any) {
+    console.error("Chat error:", error);
+    throw error;
+  }
 }
 
 /* =========================
