@@ -5,78 +5,34 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Send, Bot, User, AlertTriangle, Heart, Loader2 } from "lucide-react";
 
 /* =========================
-   Serverless AI API Calls (HuggingFace)
+   Serverless AI API Calls (HuggingFace Proxy)
 ========================= */
-const HF_TOKEN = import.meta.env.VITE_HF_TOKEN;
-const CLASSIFICATION_MODEL = "YashKumar11/vitagita-model";
-const CHAT_MODEL = "moonshotai/Kimi-K2-Instruct-0905";
-
-const id2label: Record<number, string> = {
-  0: "Crisis",
-  1: "Depression",
-  2: "Neutral",
-  3: "Normal",
-  4: "Stress"
-};
-
 const CRISIS_KEYWORDS = [
   "kill myself", "suicide", "end my life", "hang myself", "overdose", "jump off"
 ];
 
 async function queryClassification(text: string) {
-  const response = await fetch(
-    `https://api-inference.huggingface.co/models/${CLASSIFICATION_MODEL}`,
-    {
-      headers: { Authorization: `Bearer ${HF_TOKEN}` },
-      method: "POST",
-      body: JSON.stringify({ inputs: text }),
-    }
-  );
-  const result = await response.json();
-  // The classification model returns an array of scores
-  if (Array.isArray(result) && result[0]) {
-    // Some models return scores directly, others return them nested
-    const scores = Array.isArray(result[0]) ? result[0] : result;
-    const topClass = scores.reduce((prev: any, current: any) => (prev.score > current.score) ? prev : current);
-    // Extract index from label (e.g., "LABEL_0" -> 0)
-    const labelIdx = parseInt(topClass.label.replace("LABEL_", ""));
-    return { label: id2label[labelIdx] || "Neutral", score: topClass.score };
-  }
-  return { label: "Neutral", score: 0.0 };
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "classify", message: text }),
+  });
+  return await response.json();
 }
 
 async function queryChat(userText: string, label: string, history: any[]) {
-  const systemPrompt = `You are a calm, empathetic mental-health support assistant.
-Rules:
-- Do NOT give medical advice
-- Do NOT suggest medication
-- Do NOT panic unless user shows real suicidal intent
-- Be supportive and short
-- Ask gentle follow-up questions
-User mental state: ${label}`;
-
-  const messages = [
-    { role: "system", content: systemPrompt },
-    ...history,
-    { role: "user", content: userText }
-  ];
-
-  const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
+  const response = await fetch("/api/chat", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${HF_TOKEN}`,
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: CHAT_MODEL,
-      messages: messages,
-      temperature: 0.6,
-      max_tokens: 200,
+      type: "chat",
+      message: userText,
+      label: label,
+      history: history,
     }),
   });
-
   const data = await response.json();
-  return data.choices?.[0]?.message?.content || "I'm here for you.";
+  return data.reply;
 }
 
 /* =========================
