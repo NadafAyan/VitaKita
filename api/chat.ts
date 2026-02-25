@@ -36,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         if (type === 'classify') {
             const response = await fetch(
-                `https://api-inference.huggingface.co/models/${CLASSIFICATION_MODEL}`,
+                `https://router.huggingface.co/hf-inference/models/${CLASSIFICATION_MODEL}`,
                 {
                     headers: { Authorization: `Bearer ${HF_TOKEN}` },
                     method: "POST",
