@@ -13,12 +13,14 @@ export default defineConfig(({ mode }) => {
       port: 8080,
       proxy: {
         "/api/classify": {
-          target: "https://router.huggingface.co/hf-inference/models/YashKumar11/vitagita-model",
+          target: "https://router.huggingface.co/v1/chat/completions",
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/classify/, ""),
           headers: {
             Authorization: `Bearer ${env.VITE_HF_TOKEN}`,
           },
+          // We can't easily change the body in common Vite proxy, 
+          // but we can ensure ChatPage sends the right body.
         },
         "/api/chat-hf": {
           target: "https://router.huggingface.co/v1/chat/completions",
