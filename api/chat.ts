@@ -25,7 +25,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { type, message, history, label: providedLabel } = req.body;
 
     try {
-        // Both 'classify' and 'chat' will now use the LLM since the custom model isn't on Inference API
         if (type === 'classify') {
             const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
                 method: "POST",
@@ -50,7 +49,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const data = await response.json();
             const detectedLabel = data.choices?.[0]?.message?.content?.trim() || "Normal";
 
-            // Clean up the label in case the LLM adds punctuation
             const validLabels = ["Crisis", "Depression", "Neutral", "Normal", "Stress"];
             const finalLabel = validLabels.find(l => detectedLabel.includes(l)) || "Normal";
 
