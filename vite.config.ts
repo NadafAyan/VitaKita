@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       port: 8080,
       proxy: {
         "/api/classify": {
-          target: "https://api-inference.huggingface.co/models/YashKumar11/vitagita-model",
+          target: "https://router.huggingface.co/hf-inference/models/YashKumar11/vitagita-model",
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/classify/, ""),
           headers: {
