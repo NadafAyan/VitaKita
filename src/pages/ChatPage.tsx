@@ -13,10 +13,22 @@ const CRISIS_KEYWORDS = [
 
 async function queryClassification(text: string) {
   try {
+    const CHAT_MODEL = "moonshotai/Kimi-K2-Instruct-0905";
     const response = await fetch("/api/classify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inputs: text }),
+      body: JSON.stringify({
+        model: CHAT_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: "Classify the user's mental state into exactly one label: Crisis, Depression, Neutral, Normal, or Stress. Return ONLY the label name."
+          },
+          { role: "user", content: text }
+        ],
+        temperature: 0.1,
+        max_tokens: 10,
+      }),
     });
 
     if (!response.ok) {
@@ -24,15 +36,13 @@ async function queryClassification(text: string) {
     }
 
     const result = await response.json();
-    if (Array.isArray(result) && result[0]) {
-      const scores = Array.isArray(result[0]) ? result[0] : result;
-      const topClass = scores.reduce((prev: any, current: any) => (prev.score > current.score) ? prev : current);
-      // Mapping is now handled in frontend for dev simplicity
-      const id2label: Record<number, string> = { 0: "Crisis", 1: "Depression", 2: "Neutral", 3: "Normal", 4: "Stress" };
-      const labelIdx = parseInt(topClass.label.replace("LABEL_", ""));
-      return { label: id2label[labelIdx] || "Neutral", score: topClass.score };
-    }
-    return { label: "Neutral", score: 0.0 };
+    const detectedLabel = result.choices?.[0]?.message?.content?.trim() || "Normal";
+
+    // Clean up the label in case the LLM adds punctuation or extra text
+    const validLabels = ["Crisis", "Depression", "Neutral", "Normal", "Stress"];
+    const finalLabel = validLabels.find(l => detectedLabel.toLowerCase().includes(l.toLowerCase())) || "Normal";
+
+    return { label: finalLabel, score: 1.0 };
   } catch (error: any) {
     console.error("Classification error:", error);
     throw error;
