@@ -93,7 +93,7 @@ const ChatPage = () => {
     {
       id: "1",
       sender: "bot",
-      text: "Hello! I’m your VitaGita AI companion. How are you feeling today?",
+      text: "Hello! I’m Nikks. How are you feeling today?",
       timestamp: new Date(),
       isEmergency: false,
     },
